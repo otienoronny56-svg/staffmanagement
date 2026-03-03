@@ -1,0 +1,3 @@
+// Supabase Configuration - DO NOT COMMIT THIS FILE
+const SUPABASE_URL = "https://evxmyqnsiapiojsukxmh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2eG15cW5zaWFwaW9qc3VreG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MjkwODMsImV4cCI6MjA4ODEwNTA4M30.1MnMGPWmjvXm4nUB7ZAPdZSKAMVU4npDcgyyhMbrzlo";
