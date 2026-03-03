@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Man | Business Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #fcfdfe;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(255, 255, 255, 0.2);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #000000;
+            --accent-soft: #f1f5f9;
+            --indicator-idle: #e2e8f0;
+            --shadow-subtle: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+            --aura-1: #6366f1;
+            --aura-2: #3b82f6;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #020617;
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #ffffff;
+            --accent-soft: #0f172a;
+            --indicator-idle: #1e293b;
+            --shadow-subtle: 0 4px 24px -2px rgba(0, 0, 0, 0.6);
+            --aura-1: #4338ca;
+            --aura-2: #1d4ed8;
+        }
+
+        html,
+        body {
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transition: background-color 0.5s ease, color 0.5s ease;
+            font-size: 0.875rem;
+            /* Compact Font */
+            line-height: 1.5;
+            letter-spacing: -0.011em;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-heading {
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        /* Aura Background System */
+        .aura-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .aura-blob {
+            position: absolute;
+            width: 80vw;
+            height: 80vw;
+            filter: blur(120px);
+            opacity: 0.05;
+            border-radius: 50%;
+            animation: drift 25s infinite alternate ease-in-out;
+        }
+
+        .aura-1 {
+            background: var(--aura-1);
+            top: -20%;
+            left: -10%;
+        }
+
+        .aura-2 {
+            background: var(--aura-2);
+            bottom: -20%;
+            right: -10%;
+            animation-delay: -7s;
+        }
+
+        [data-theme="dark"] .aura-blob {
+            opacity: 0.12;
+        }
+
+        @keyframes drift {
+            from {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+
+            to {
+                transform: translate(10%, 15%) rotate(90deg) scale(1.1);
+            }
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.4s ease;
+        }
+
+        /* Ultra-Slim Tabs */
+        .tab-btn {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 25%;
+            right: 25%;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 10px;
+        }
+
+        /* Compact UI Elements */
+        input,
+        select {
+            background-color: var(--accent-soft) !important;
+            color: var(--text-main) !important;
+            border: 1px solid transparent !important;
+            font-size: 0.8rem !important;
+        }
+
+        input:focus,
+        select:focus {
+            background-color: transparent !important;
+            border-color: var(--accent) !important;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-color);
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--accent);
+            color: var(--text-main);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Header Layout Fix */
+        .mini-header {
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .theme-toggle {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: var(--accent-soft);
+            transition: transform 0.2s;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <!-- Aura Background -->
+    <div class="aura-canvas">
+        <div class="aura-blob aura-1"></div>
+        <div class="aura-blob aura-2"></div>
+    </div>
+
+    <!-- Ultra-Compact Header -->
+    <header class="sticky top-0 z-50 glass-card mini-header">
+        <div class="max-w-3xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="flex flex-col">
+                    <h1 class="text-sm font-semibold uppercase tracking-widest leading-none" onclick="location.reload()"
+                        style="cursor: pointer;">Modern Man</h1>
+                    <div class="flex items-center gap-1.5 opacity-40">
+                        <div id="sync_status" class="w-1.5 h-1.5 rounded-full"
+                            style="background: var(--indicator-idle);"></div>
+                        <span class="text-[8px] font-bold uppercase tracking-tighter">Business Suite</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input type="date" id="log_date"
+                    class="rounded-md text-[9px] p-1.5 opacity-80 hover:opacity-100 transition-opacity">
+                <button onclick="toggleTheme()" class="theme-toggle" title="Switch Theme">
+                    <svg id="theme_icon_sun" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 hidden" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                    </svg>
+                    <svg id="theme_icon_moon" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto p-4 md:p-6 space-y-5 pb-28">
+
+        <!-- Slim Tab Navigation -->
+        <nav class="flex justify-center gap-8 border-b border-transparent pb-1">
+            <button onclick="switchTab('ledger')" id="tab_ledger"
+                class="tab-btn active uppercase tracking-widest pb-1">Ledger</button>
+            <button onclick="switchTab('overview')" id="tab_overview"
+                class="tab-btn uppercase tracking-widest pb-1">Overview</button>
+            <button onclick="switchTab('staff')" id="tab_staff"
+                class="tab-btn uppercase tracking-widest pb-1">Registry</button>
+        </nav>
+
+        <!-- OVERVIEW TAB -->
+        <section id="section_overview" class="space-y-4 hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div class="flex items-center justify-between px-1">
+                <h2 class="text-[8px] font-bold uppercase tracking-widest opacity-30">Global Intelligence</h2>
+                <button onclick="fetchGlobalOverview()"
+                    class="text-[8px] font-bold text-blue-500 uppercase tracking-widest">Force Refresh</button>
+            </div>
+
+            <div id="global_stats_list" class="space-y-3">
+                <div class="p-12 text-center opacity-20 italic text-[10px]">Accessing Cloud Intelligence...</div>
+            </div>
+        </section>
+
+        <!-- LEDGER TAB -->
+        <section id="section_ledger" class="space-y-4">
+            <div class="glass-card rounded-2xl p-4">
+                <div class="relative">
+                    <input type="text" id="employee_search" oninput="searchEmployees(this.value)"
+                        class="w-full text-base font-semibold bg-transparent border-b outline-none pb-1"
+                        style="border-color: var(--card-border);" placeholder="Select tailor to manage ledger...">
+                    <div id="search_results"
+                        class="absolute left-0 right-0 top-full mt-1 glass-card rounded-xl z-40 hidden max-h-48 overflow-y-auto shadow-xl">
+                    </div>
+                </div>
+                <!-- Selection Badge -->
+                <div id="selected_employee_badge"
+                    class="mt-3 flex items-center justify-between rounded-lg px-3 py-2 hidden"
+                    style="background: var(--accent-soft);">
+                    <div class="flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                        <span id="selected_name" class="text-[10px] font-bold uppercase tracking-tight">Staff
+                            Loaded</span>
+                    </div>
+                    <button onclick="clearSelection()"
+                        class="opacity-30 hover:opacity-100 hover:text-red-500 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Filters -->
+            <div class="flex items-center gap-3 px-1">
+                <div class="flex items-center gap-2 bg-black/5 dark:bg-white/10 p-1 rounded-md">
+                    <span class="text-[7px] font-bold opacity-70 uppercase">Range</span>
+                    <div class="flex items-center gap-1">
+                        <input type="date" id="filter_from" onchange="loadFromCloud()"
+                            class="rounded p-1 text-[8px] opacity-90">
+                        <span class="opacity-40">/</span>
+                        <input type="date" id="filter_to" onchange="loadFromCloud()"
+                            class="rounded p-1 text-[8px] opacity-90">
+                    </div>
+                </div>
+            </div>
+
+            <div id="ledger_controls" class="space-y-4 opacity-40 pointer-events-none transition-all">
+                <!-- Slim Entry Form -->
+                <div class="glass-card rounded-2xl p-4 space-y-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="col-span-2 space-y-1">
+                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Garment</span>
+                            <select id="garment_type" class="w-full rounded-xl p-2 outline-none appearance-none">
+                                <option>Blazer</option>
+                                <option>Pant</option>
+                                <option>Waist coat</option>
+                                <option>Dress</option>
+                                <option>Shirt (African/Official)</option>
+                                <option>Skirt</option>
+                                <option>Repair</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Qty</span>
+                            <input type="number" id="qty" class="w-full rounded-xl p-2" placeholder="0">
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Cost</span>
+                            <input type="number" id="unit_cost" class="w-full rounded-xl p-2" placeholder="0">
+                        </div>
+                    </div>
+                    <button onclick="addEntry()"
+                        class="w-full py-3 rounded-xl btn-primary uppercase tracking-widest shadow-md">Add Production
+                        Entry</button>
+                </div>
+
+                <div id="entries_list" class="space-y-2 max-h-[300px] overflow-y-auto no-scrollbar hidden"></div>
+
+                <div class="h-px bg-current opacity-[0.05] mx-4"></div>
+
+                <!-- Slim Payment Form -->
+                <div class="glass-card rounded-2xl p-4 space-y-4">
+                    <div class="grid grid-cols-3 md:grid-cols-4 gap-3">
+                        <div class="col-span-2 md:col-span-3 space-y-1">
+                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Payment Note</span>
+                            <input type="text" id="adv_desc" placeholder="Lunch, Fuel, Advance etc."
+                                class="w-full rounded-xl p-2">
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Amount</span>
+                            <input type="number" id="adv_amount" placeholder="0.00" class="w-full rounded-xl p-2">
+                        </div>
+                    </div>
+                    <button onclick="addAdvance()"
+                        class="w-full py-3 rounded-xl btn-secondary uppercase tracking-widest">Record Payment</button>
+                </div>
+                <div id="advances_list" class="space-y-2 hidden"></div>
+            </div>
+        </section>
+
+        <!-- STAFF TAB -->
+        <section id="section_staff" class="space-y-4 hidden">
+            <div class="glass-card rounded-2xl p-5">
+                <h3 class="text-[10px] uppercase font-bold mb-3 opacity-50 tracking-widest">Onboard Tailor</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="new_employee_name" class="flex-grow rounded-xl p-3"
+                        placeholder="Full name...">
+                    <button onclick="addNewEmployee()" class="px-5 rounded-xl btn-primary">Onboard</button>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <div id="staff_full_list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Global Floating Footer -->
+    <footer class="fixed bottom-4 left-4 right-4 z-50 max-w-3xl mx-auto">
+        <div class="glass-card rounded-2xl p-3 px-5 flex items-center justify-between shadow-2xl">
+            <div class="flex items-center gap-4 sm:gap-6 py-1">
+                <div class="min-w-fit">
+                    <span class="block text-[7px] font-bold opacity-70 uppercase tracking-tighter">Gross</span>
+                    <span id="display_total" class="text-xs font-bold font-heading">0.00</span>
+                </div>
+                <div class="min-w-fit">
+                    <span class="block text-[7px] font-bold opacity-70 uppercase tracking-tighter">Paid</span>
+                    <span id="display_paid" class="text-xs font-bold text-red-500 font-heading">0.00</span>
+                </div>
+                <div class="border-l pl-4 sm:pl-6 h-6 flex flex-col justify-center"
+                    style="border-color: var(--card-border);">
+                    <span class="block text-[7px] font-bold opacity-70 uppercase tracking-tighter">Net Debt</span>
+                    <span id="display_balance" class="text-sm font-bold font-heading leading-tight"
+                        style="color: var(--text-main);">0.00</span>
+                    <span id="display_balance_mobile" class="hidden">0.00</span>
+                </div>
+            </div>
+
+            <button onclick="window.print()"
+                class="w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:opacity-80"
+                style="background: var(--accent); color: var(--bg-color);">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+            </button>
+        </div>
+    </footer>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm_modal"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden animate-in fade-in duration-200">
+        <div class="glass-card rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold">Terminate Staff?</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">This will permanently remove <span
+                        id="confirm_emp_name" class="font-bold text-slate-800 dark:text-slate-200"></span> from the
+                    registry. This action cannot be undone.</p>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeConfirmModal()"
+                    class="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 font-bold text-[10px] uppercase tracking-widest">Cancel</button>
+                <button id="confirm_fire_btn"
+                    class="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-red-500/20">Fire
+                    Staff</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
