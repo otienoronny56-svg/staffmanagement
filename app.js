@@ -51,14 +51,17 @@ function switchTab(tab) {
     currentTab = tab;
     document.getElementById('tab_ledger').classList.toggle('active', tab === 'ledger');
     document.getElementById('tab_overview').classList.toggle('active', tab === 'overview');
+    document.getElementById('tab_transactions').classList.toggle('active', tab === 'transactions');
     document.getElementById('tab_staff').classList.toggle('active', tab === 'staff');
 
     document.getElementById('section_ledger').classList.toggle('hidden', tab !== 'ledger');
     document.getElementById('section_overview').classList.toggle('hidden', tab !== 'overview');
+    document.getElementById('section_transactions').classList.toggle('hidden', tab !== 'transactions');
     document.getElementById('section_staff').classList.toggle('hidden', tab !== 'staff');
 
     if (tab === 'overview') fetchGlobalOverview();
     if (tab === 'staff') fetchEmployees();
+    if (tab === 'transactions') fetchGlobalTransactions();
 }
 
 function setSyncStatus(status) {
@@ -508,5 +511,77 @@ function setQuickFilter(type) {
         document.getElementById('filter_from').value = firstDay;
         document.getElementById('filter_to').value = lastDay;
         loadFromCloud();
+    }
+}
+
+async function fetchGlobalTransactions() {
+    const listContainer = document.getElementById('global_transactions_list');
+    listContainer.innerHTML = '<div class="p-12 text-center opacity-20 italic text-[10px]">Loading transactions...</div>';
+    setSyncStatus('syncing');
+
+    try {
+        const [prodRes, payRes] = await Promise.all([
+            db.from('production_logs').select('id, employee_name, garment_type, quantity, unit_cost, created_at'),
+            db.from('payment_logs').select('id, employee_name, amount_paid, description, created_at')
+        ]);
+
+        if (prodRes.error) throw prodRes.error;
+        if (payRes.error) throw payRes.error;
+
+        let allTxs = [];
+        (prodRes.data || []).forEach(p => {
+            allTxs.push({
+                id: p.id,
+                date: p.created_at,
+                employee: p.employee_name,
+                type: 'work',
+                desc: `${p.garment_type} (${p.quantity} units)`,
+                amount: p.quantity * p.unit_cost,
+                isCredit: true
+            });
+        });
+
+        (payRes.data || []).forEach(p => {
+            allTxs.push({
+                id: p.id,
+                date: p.created_at,
+                employee: p.employee_name,
+                type: 'payment',
+                desc: p.description || 'Payment',
+                amount: p.amount_paid,
+                isCredit: false
+            });
+        });
+
+        allTxs.sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest first
+
+        if (allTxs.length === 0) {
+            listContainer.innerHTML = '<div class="p-12 text-center opacity-20 italic text-[10px]">No transactions found.</div>';
+        } else {
+            listContainer.innerHTML = allTxs.map(tx => `
+                <div class="glass-card rounded-xl p-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg ${tx.isCredit ? 'bg-slate-100 text-slate-500' : 'bg-red-100 text-red-500'} flex items-center justify-center font-bold text-xs">
+                            ${tx.isCredit ? 'W' : 'P'}
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold">${tx.employee}</div>
+                            <div class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">
+                                ${formatDate(tx.date)} • ${tx.desc}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-sm font-bold ${tx.isCredit ? 'text-slate-800 dark:text-slate-200' : 'text-red-500'}">
+                        ${tx.isCredit ? '' : '-'}${tx.amount.toFixed(2)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        setSyncStatus('success');
+    } catch (err) {
+        console.error("Error fetching transactions:", err);
+        listContainer.innerHTML = '<div class="p-12 text-center text-red-500 italic text-[10px]">Error loading transactions.</div>';
+        setSyncStatus('error');
     }
 }
