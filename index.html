@@ -277,7 +277,7 @@
         <section id="section_ledger" class="space-y-4 hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div class="glass-card rounded-2xl p-4">
                 <div class="relative">
-                    <input type="text" id="employee_search" oninput="searchEmployees(this.value)"
+                    <input type="text" id="employee_search" oninput="searchEmployees(this.value)" onfocus="searchEmployees(this.value)" onclick="searchEmployees(this.value)"
                         class="w-full text-base font-semibold bg-transparent border-b outline-none pb-1"
                         style="border-color: var(--card-border);" placeholder="Select tailor to manage ledger...">
                     <div id="search_results"

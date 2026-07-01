@@ -257,12 +257,13 @@ async function fetchGlobalOverview() {
 
 function searchEmployees(query) {
     const resultsDiv = document.getElementById('search_results');
+    let matches = [];
     if (!query.trim()) {
-        resultsDiv.classList.add('hidden');
-        return;
+        matches = allEmployees;
+    } else {
+        matches = allEmployees.filter(e => e.full_name.toLowerCase().includes(query.toLowerCase()));
     }
-
-    const matches = allEmployees.filter(e => e.full_name.toLowerCase().includes(query.toLowerCase()));
+    
     if (matches.length > 0) {
         resultsDiv.innerHTML = matches.map(e => `
             <div onclick="selectEmployee('${e.id}', '${e.full_name}')" class="p-3 hover:bg-slate-50 cursor-pointer text-sm font-medium border-b border-slate-100 last:border-0">
@@ -587,3 +588,14 @@ async function fetchGlobalTransactions() {
         setSyncStatus('error');
     }
 }
+
+// Hide search results when clicking outside
+document.addEventListener('click', (e) => {
+    const searchInput = document.getElementById('employee_search');
+    const resultsDiv = document.getElementById('search_results');
+    if (searchInput && resultsDiv) {
+        if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+            resultsDiv.classList.add('hidden');
+        }
+    }
+});
