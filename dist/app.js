@@ -335,14 +335,16 @@ async function loadFromCloud() {
             type: d.garment_type,
             qty: d.quantity,
             unit_cost: d.unit_cost,
-            date: d.created_at
+            date: d.created_at,
+            status: d.status || 'in_production'
         }));
 
         advances = (payRes.data || []).map(d => ({
             id: d.id,
             desc: d.description,
             amount: parseFloat(d.amount_paid),
-            date: d.created_at
+            date: d.created_at,
+            production_log_id: d.production_log_id || null
         }));
 
         setSyncStatus('success');
@@ -375,40 +377,76 @@ function updateDisplays() {
 
     if (productionEntries.length > 0) {
         entriesList.classList.remove('hidden');
-        entriesList.innerHTML = productionEntries.map(e => `
+
+        // Calculate paid per job
+        const paidPerJob = {};
+        advances.forEach(a => {
+            if (a.production_log_id) {
+                paidPerJob[a.production_log_id] = (paidPerJob[a.production_log_id] || 0) + a.amount;
+            }
+        });
+
+        // Sort: in_production first, then completed
+        const sorted = [...productionEntries].sort((a, b) => {
+            if (a.status === b.status) return 0;
+            return a.status === 'in_production' ? -1 : 1;
+        });
+
+        entriesList.innerHTML = sorted.map(e => {
+            const total = e.qty * e.unit_cost;
+            const paid = paidPerJob[e.id] || 0;
+            const remaining = total - paid;
+            const isDone = e.status === 'completed';
+            return `
             <div class="glass-card rounded-xl p-4 entry-card flex items-center justify-between group">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs">
-                        ${e.type.charAt(0)}
+                    <div class="w-8 h-8 rounded-lg ${isDone ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'} flex items-center justify-center font-bold text-xs">
+                        ${isDone ? '✓' : e.type.charAt(0)}
                     </div>
                     <div>
                         <div class="text-sm font-semibold">${e.type}</div>
                         <div class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">
                             ${formatDate(e.date)} • ${e.qty} units
                         </div>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${isDone ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-700'}">${
+                                isDone ? 'Completed' : 'In Production'
+                            }</span>
+                            ${paid > 0 ? `<span class="text-[8px] font-bold text-red-400">Paid: ${paid.toFixed(2)}</span>` : ''}
+                            ${remaining > 0 && !isDone ? `<span class="text-[8px] font-bold text-slate-400">Rem: ${remaining.toFixed(2)}</span>` : ''}
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="text-sm font-bold">${(e.qty * e.unit_cost).toFixed(2)}</div>
-                    <button onclick="removeEntry('${e.id}')" class="text-slate-300 hover:text-red-500 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
+                <div class="flex flex-col items-end gap-2">
+                    <div class="text-sm font-bold">${total.toFixed(2)}</div>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        ${!isDone ? `<button onclick="markJobComplete('${e.id}')" class="text-[7px] font-bold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-1 rounded-lg hover:bg-green-100 transition-all whitespace-nowrap">Mark Done</button>` : ''}
+                        <button onclick="removeEntry('${e.id}')" class="text-slate-300 hover:text-red-500 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     } else { entriesList.classList.add('hidden'); }
 
     if (advances.length > 0) {
         advancesList.classList.remove('hidden');
-        advancesList.innerHTML = advances.map(a => `
+        advancesList.innerHTML = advances.map(a => {
+            const linkedJob = a.production_log_id
+                ? productionEntries.find(e => e.id === a.production_log_id)
+                : null;
+            const label = linkedJob ? `Job: ${linkedJob.type}` : (a.desc || 'Expense');
+            const sublabel = a.production_log_id ? 'Job Payment' : (a.desc || 'General Expense');
+            return `
             <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50/50 border border-slate-100 group">
                 <div class="flex items-center gap-3">
-                    <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-[8px] font-bold">P</div>
+                    <div class="w-6 h-6 rounded-full ${a.production_log_id ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-500'} flex items-center justify-center text-[8px] font-bold">${a.production_log_id ? 'J' : 'E'}</div>
                     <div>
-                        <div class="text-xs font-semibold text-slate-600">${a.desc || 'Advance'}</div>
-                        <div class="text-[8px] text-slate-400 uppercase tracking-widest">${formatDate(a.date)}</div>
+                        <div class="text-xs font-semibold text-slate-600">${label}</div>
+                        <div class="text-[8px] text-slate-400 uppercase tracking-widest">${formatDate(a.date)} • ${sublabel}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -419,8 +457,8 @@ function updateDisplays() {
                         </svg>
                     </button>
                 </div>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
     } else { advancesList.classList.add('hidden'); }
 }
 
@@ -456,12 +494,136 @@ async function addEntry() {
     } catch (err) { setSyncStatus('error'); }
 }
 
-async function addAdvance() {
-    if (!currentEmployee) return;
-    const desc = document.getElementById('adv_desc').value.trim();
-    const amount = parseFloat(document.getElementById('adv_amount').value);
-    const date = document.getElementById('log_date').value;
+// --- Payment Modal ---
 
+let selectedJobId = null;
+
+function openPaymentModal() {
+    if (!currentEmployee) return;
+    selectedJobId = null;
+    document.getElementById('pay_job_form').classList.add('hidden');
+    document.getElementById('pay_exp_desc').value = '';
+    document.getElementById('pay_exp_amount').value = '';
+    switchPaymentTab('job');
+    renderPayJobList();
+    document.getElementById('payment_modal').classList.remove('hidden');
+}
+
+function closePaymentModal() {
+    document.getElementById('payment_modal').classList.add('hidden');
+}
+
+function switchPaymentTab(tab) {
+    const isJob = tab === 'job';
+    document.getElementById('pay_tab_job').className = `flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${isJob ? 'bg-white dark:bg-white/10 shadow-sm' : 'text-slate-400'}`;
+    document.getElementById('pay_tab_expense').className = `flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${!isJob ? 'bg-white dark:bg-white/10 shadow-sm' : 'text-slate-400'}`;
+    document.getElementById('pay_panel_job').classList.toggle('hidden', !isJob);
+    document.getElementById('pay_panel_expense').classList.toggle('hidden', isJob);
+}
+
+function renderPayJobList() {
+    const paidPerJob = {};
+    advances.forEach(a => {
+        if (a.production_log_id) {
+            paidPerJob[a.production_log_id] = (paidPerJob[a.production_log_id] || 0) + a.amount;
+        }
+    });
+
+    const list = document.getElementById('pay_job_list');
+    if (productionEntries.length === 0) {
+        list.innerHTML = '<div class="p-6 text-center opacity-30 italic text-xs">No production entries found.</div>';
+        return;
+    }
+
+    list.innerHTML = productionEntries.map(e => {
+        const total = e.qty * e.unit_cost;
+        const paid = paidPerJob[e.id] || 0;
+        const remaining = total - paid;
+        const isDone = e.status === 'completed';
+        return `
+        <div onclick="selectJobForPayment('${e.id}')"
+            class="p-3 rounded-xl border-2 cursor-pointer transition-all hover:border-blue-400 ${selectedJobId === e.id ? 'border-blue-500 bg-blue-50/50' : 'border-transparent bg-slate-50/50 dark:bg-white/5'}"
+            id="pay_job_item_${e.id}">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold">${e.type} <span class="text-[8px] font-normal text-slate-400">× ${e.qty}</span></div>
+                    <div class="text-[8px] uppercase tracking-widest text-slate-400 mt-0.5">${formatDate(e.date)}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs font-bold">${total.toFixed(2)}</div>
+                    <div class="text-[8px] font-bold ${remaining <= 0 ? 'text-green-500' : 'text-red-400'}">
+                        ${remaining <= 0 ? 'Fully Paid' : `Rem: ${remaining.toFixed(2)}`}
+                    </div>
+                    <span class="text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${isDone ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-700'}">${isDone ? 'Completed' : 'In Production'}</span>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function selectJobForPayment(jobId) {
+    selectedJobId = jobId;
+    const paidPerJob = {};
+    advances.forEach(a => {
+        if (a.production_log_id) {
+            paidPerJob[a.production_log_id] = (paidPerJob[a.production_log_id] || 0) + a.amount;
+        }
+    });
+
+    const job = productionEntries.find(e => e.id === jobId);
+    if (!job) return;
+    const total = job.qty * job.unit_cost;
+    const paid = paidPerJob[jobId] || 0;
+    const remaining = Math.max(0, total - paid);
+
+    document.getElementById('pay_job_selected_label').textContent = `Selected: ${job.type} (${job.qty} units)`;
+    document.getElementById('pay_job_value').textContent = total.toFixed(2);
+    document.getElementById('pay_job_paid').textContent = paid.toFixed(2);
+    document.getElementById('pay_job_amount').value = remaining.toFixed(2);
+    document.getElementById('pay_job_form').classList.remove('hidden');
+
+    // Highlight selected
+    document.querySelectorAll('[id^="pay_job_item_"]').forEach(el => {
+        el.classList.remove('border-blue-500', 'bg-blue-50/50');
+        el.classList.add('border-transparent', 'bg-slate-50/50', 'dark:bg-white/5');
+    });
+    const sel = document.getElementById(`pay_job_item_${jobId}`);
+    if (sel) {
+        sel.classList.add('border-blue-500', 'bg-blue-50/50');
+        sel.classList.remove('border-transparent');
+    }
+}
+
+async function submitJobPayment() {
+    if (!currentEmployee || !selectedJobId) return;
+    const amount = parseFloat(document.getElementById('pay_job_amount').value);
+    if (isNaN(amount) || amount <= 0) return;
+
+    const job = productionEntries.find(e => e.id === selectedJobId);
+    setSyncStatus('syncing');
+    try {
+        const insertObj = {
+            employee_name: currentEmployee.full_name,
+            amount_paid: amount,
+            description: `Job Payment: ${job ? job.type : ''}`,
+            production_log_id: selectedJobId
+        };
+        const date = document.getElementById('log_date').value;
+        if (date) insertObj.created_at = date + 'T12:00:00';
+
+        const { data, error } = await db.from('payment_logs').insert([insertObj]).select();
+        if (error) throw error;
+        advances.unshift({ ...data[0], date: data[0].created_at, amount: parseFloat(data[0].amount_paid), desc: data[0].description, production_log_id: data[0].production_log_id });
+        closePaymentModal();
+        setSyncStatus('success');
+        updateDisplays();
+    } catch (err) { setSyncStatus('error'); }
+}
+
+async function submitExpensePayment() {
+    if (!currentEmployee) return;
+    const desc = document.getElementById('pay_exp_desc').value.trim();
+    const amount = parseFloat(document.getElementById('pay_exp_amount').value);
     if (isNaN(amount) || amount <= 0) return;
 
     setSyncStatus('syncing');
@@ -469,19 +631,33 @@ async function addAdvance() {
         const insertObj = {
             employee_name: currentEmployee.full_name,
             amount_paid: amount,
-            description: desc
+            description: desc || 'General Expense'
         };
+        const date = document.getElementById('log_date').value;
         if (date) insertObj.created_at = date + 'T12:00:00';
 
         const { data, error } = await db.from('payment_logs').insert([insertObj]).select();
         if (error) throw error;
-        advances.unshift({ ...data[0], date: data[0].created_at, amount: parseFloat(data[0].amount_paid), desc: data[0].description });
-        document.getElementById('adv_desc').value = '';
-        document.getElementById('adv_amount').value = '';
+        advances.unshift({ ...data[0], date: data[0].created_at, amount: parseFloat(data[0].amount_paid), desc: data[0].description, production_log_id: null });
+        closePaymentModal();
         setSyncStatus('success');
         updateDisplays();
     } catch (err) { setSyncStatus('error'); }
 }
+
+async function markJobComplete(id) {
+    setSyncStatus('syncing');
+    try {
+        const { error } = await db.from('production_logs').update({ status: 'completed' }).eq('id', id);
+        if (error) throw error;
+        const entry = productionEntries.find(e => e.id === id);
+        if (entry) entry.status = 'completed';
+        setSyncStatus('success');
+        updateDisplays();
+    } catch (err) { setSyncStatus('error'); }
+}
+
+
 
 async function removeEntry(id) {
     if (!confirm("Delete record?")) return;

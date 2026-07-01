@@ -351,28 +351,69 @@
                 <h3 class="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2 mt-4 ml-1">Work Logged (Production)</h3>
                 <div id="entries_list" class="space-y-2 max-h-[300px] overflow-y-auto no-scrollbar hidden"></div>
 
-                <div class="h-px bg-current opacity-[0.05] mx-4"></div>
-
-                <!-- Slim Payment Form -->
-                <div class="glass-card rounded-2xl p-4 space-y-4">
-                    <div class="grid grid-cols-3 md:grid-cols-4 gap-3">
-                        <div class="col-span-2 md:col-span-3 space-y-1">
-                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Payment Note</span>
-                            <input type="text" id="adv_desc" placeholder="Lunch, Fuel, Advance etc."
-                                class="w-full rounded-xl p-2">
-                        </div>
-                        <div class="space-y-1">
-                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Amount</span>
-                            <input type="number" id="adv_amount" placeholder="0.00" class="w-full rounded-xl p-2">
-                        </div>
-                    </div>
-                    <button onclick="addAdvance()"
-                        class="w-full py-3 rounded-xl btn-secondary uppercase tracking-widest">Record Payment</button>
-                </div>
                 <h3 class="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2 mt-4 ml-1">Payments & Advances</h3>
                 <div id="advances_list" class="space-y-2 hidden"></div>
+
+                <!-- Record Payment Button -->
+                <button onclick="openPaymentModal()"
+                    class="w-full py-3 rounded-xl btn-secondary uppercase tracking-widest mt-2">Record Payment</button>
             </div>
         </section>
+
+        <!-- PAYMENT MODAL -->
+        <div id="payment_modal"
+            class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm hidden animate-in fade-in duration-200">
+            <div class="glass-card rounded-t-3xl sm:rounded-3xl p-5 w-full max-w-md shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold">Record Payment</h3>
+                    <button onclick="closePaymentModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 text-xs font-bold">✕</button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-white/5">
+                    <button onclick="switchPaymentTab('job')" id="pay_tab_job"
+                        class="flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all bg-white dark:bg-white/10 shadow-sm">Pay for Job</button>
+                    <button onclick="switchPaymentTab('expense')" id="pay_tab_expense"
+                        class="flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-slate-400">General Expense</button>
+                </div>
+
+                <!-- TAB A: Pay for Job -->
+                <div id="pay_panel_job" class="space-y-3 overflow-y-auto flex-1 no-scrollbar">
+                    <p class="text-[9px] uppercase tracking-widest opacity-40">Select a job to pay for:</p>
+                    <div id="pay_job_list" class="space-y-2"></div>
+                    <div id="pay_job_form" class="space-y-3 pt-2 border-t hidden" style="border-color: var(--card-border);">
+                        <div id="pay_job_selected_label" class="text-xs font-semibold text-blue-600"></div>
+                        <div class="grid grid-cols-2 gap-3 text-[9px] font-bold uppercase tracking-widest opacity-60">
+                            <div>Job Value: <span id="pay_job_value" class="text-slate-700 dark:text-slate-300"></span></div>
+                            <div>Already Paid: <span id="pay_job_paid" class="text-red-500"></span></div>
+                        </div>
+                        <div class="space-y-1">
+                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Payment Amount</span>
+                            <input type="number" id="pay_job_amount" placeholder="0.00" class="w-full rounded-xl p-3 text-base font-bold">
+                        </div>
+                        <button onclick="submitJobPayment()"
+                            class="w-full py-3 rounded-xl btn-primary uppercase tracking-widest shadow-md">Confirm Payment</button>
+                    </div>
+                </div>
+
+                <!-- TAB B: General Expense -->
+                <div id="pay_panel_expense" class="space-y-3 hidden">
+                    <p class="text-[9px] uppercase tracking-widest opacity-40">Fuel, lunch, advance, transport, etc.</p>
+                    <div class="space-y-1">
+                        <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Note</span>
+                        <input type="text" id="pay_exp_desc" placeholder="e.g. Lunch, Fuel, Transport..." class="w-full rounded-xl p-3">
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Amount</span>
+                        <input type="number" id="pay_exp_amount" placeholder="0.00" class="w-full rounded-xl p-3 text-base font-bold">
+                    </div>
+                    <button onclick="submitExpensePayment()"
+                        class="w-full py-3 rounded-xl btn-secondary uppercase tracking-widest">Record Expense</button>
+                </div>
+            </div>
+        </div>
+
 
         <!-- TRANSACTIONS TAB -->
         <section id="section_transactions" class="space-y-4 hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
