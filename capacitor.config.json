@@ -1,0 +1,13 @@
+{
+  "appId": "com.modernman.business",
+  "appName": "Modern Man",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "backgroundColor": "#020617",
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DEFAULT"
+    }
+  }
+}
