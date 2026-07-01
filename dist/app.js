@@ -19,6 +19,8 @@ window.onload = function () {
 
     initTheme();
     fetchEmployees();
+    if (currentTab === 'overview') fetchGlobalOverview();
+    if (currentTab === 'transactions') fetchGlobalTransactions();
     updateDisplays();
 };
 
