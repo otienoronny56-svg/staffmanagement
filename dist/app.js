@@ -397,36 +397,40 @@ function updateDisplays() {
             const paid = paidPerJob[e.id] || 0;
             const remaining = total - paid;
             const isDone = e.status === 'completed';
+            const isFullyPaid = remaining <= 0;
             return `
-            <div class="glass-card rounded-xl p-4 entry-card flex items-center justify-between group">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg ${isDone ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'} flex items-center justify-center font-bold text-xs">
-                        ${isDone ? '✓' : e.type.charAt(0)}
-                    </div>
-                    <div>
-                        <div class="text-sm font-semibold">${e.type}</div>
-                        <div class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">
-                            ${formatDate(e.date)} • ${e.qty} units
+            <div class="glass-card rounded-xl p-3 entry-card group">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg ${isDone ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'} flex items-center justify-center font-bold text-xs shrink-0">
+                            ${isDone ? '✓' : e.type.charAt(0)}
                         </div>
-                        <div class="flex items-center gap-2 mt-0.5">
-                            <span class="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${isDone ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-700'}">${
-                                isDone ? 'Completed' : 'In Production'
-                            }</span>
-                            ${paid > 0 ? `<span class="text-[8px] font-bold text-red-400">Paid: ${paid.toFixed(2)}</span>` : ''}
-                            ${remaining > 0 && !isDone ? `<span class="text-[8px] font-bold text-slate-400">Rem: ${remaining.toFixed(2)}</span>` : ''}
+                        <div>
+                            <div class="text-sm font-semibold">${e.type}</div>
+                            <div class="text-[9px] text-slate-400 font-medium uppercase tracking-wider">
+                                ${formatDate(e.date)} • ${e.qty} units
+                            </div>
+                            <span class="text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${isDone ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-700'}">${isDone ? 'Completed' : 'In Production'}</span>
+                        </div>
+                    </div>
+                    <!-- Right: Financials -->
+                    <div class="flex flex-col items-end gap-0.5 min-w-[80px]">
+                        <div class="text-[8px] text-slate-400 uppercase tracking-wider">Total</div>
+                        <div class="text-xs font-bold">${total.toFixed(2)}</div>
+                        <div class="text-[8px] text-red-400 font-semibold">Paid: ${paid.toFixed(2)}</div>
+                        <div class="text-xs font-bold ${isFullyPaid ? 'text-green-500' : 'text-orange-500'}">
+                            Bal: ${isFullyPaid ? '0.00' : remaining.toFixed(2)}
                         </div>
                     </div>
                 </div>
-                <div class="flex flex-col items-end gap-2">
-                    <div class="text-sm font-bold">${total.toFixed(2)}</div>
-                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        ${!isDone ? `<button onclick="markJobComplete('${e.id}')" class="text-[7px] font-bold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-1 rounded-lg hover:bg-green-100 transition-all whitespace-nowrap">Mark Done</button>` : ''}
-                        <button onclick="removeEntry('${e.id}')" class="text-slate-300 hover:text-red-500 transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </div>
+                <!-- Actions (hover) -->
+                <div class="flex justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-all">
+                    ${!isDone ? `<button onclick="markJobComplete('${e.id}')" class="text-[7px] font-bold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-1 rounded-lg hover:bg-green-100 transition-all whitespace-nowrap">Mark Done</button>` : ''}
+                    <button onclick="removeEntry('${e.id}')" class="text-slate-300 hover:text-red-500 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         `}).join('');
