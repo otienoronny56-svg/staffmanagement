@@ -251,15 +251,15 @@
         style="padding-bottom: calc(7rem + env(safe-area-inset-bottom));">
 
         <!-- Slim Tab Navigation -->
-        <nav class="flex justify-center gap-8 border-b border-transparent pb-1">
+        <nav class="flex justify-start sm:justify-center gap-5 sm:gap-8 border-b border-transparent pb-1 overflow-x-auto no-scrollbar">
             <button onclick="switchTab('overview')" id="tab_overview"
-                class="tab-btn active uppercase tracking-widest pb-1">Overview</button>
+                class="tab-btn active uppercase tracking-widest pb-1 shrink-0">Overview</button>
             <button onclick="switchTab('ledger')" id="tab_ledger"
-                class="tab-btn uppercase tracking-widest pb-1">Ledger</button>
+                class="tab-btn uppercase tracking-widest pb-1 shrink-0">Ledger</button>
             <button onclick="switchTab('transactions')" id="tab_transactions"
-                class="tab-btn uppercase tracking-widest pb-1">Transactions</button>
+                class="tab-btn uppercase tracking-widest pb-1 shrink-0">Transactions</button>
             <button onclick="switchTab('staff')" id="tab_staff"
-                class="tab-btn uppercase tracking-widest pb-1">Registry</button>
+                class="tab-btn uppercase tracking-widest pb-1 shrink-0">Registry</button>
         </nav>
 
         <!-- OVERVIEW TAB -->
