@@ -1,4 +1,4 @@
-// Modern Man - Tailor & Salary Management Suite
+// Modernman Clothing Limited - Tailor & Salary Management Suite
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Global State
@@ -76,7 +76,7 @@ function handleBackNavigation() {
         return false;
     } else {
         lastBackPressTime = now;
-        showToast("Press back again to exit Modern Man", "info");
+        showToast("Press back again to exit Modernman Clothing", "info");
         history.pushState({ page: 'root' }, '');
         return true;
     }
