@@ -12,6 +12,76 @@ let activeRecordView = 'all'; // 'all', 'jobs', 'payments'
 
 // --- Initialization ---
 
+let lastBackPressTime = 0;
+
+function handleBackNavigation() {
+    // 1. Check if Payment Modal is open
+    const payModal = document.getElementById('payment_modal');
+    if (payModal && !payModal.classList.contains('hidden')) {
+        closePaymentModal();
+        return true;
+    }
+
+    // 2. Check if Edit Contact Modal is open
+    const contactModal = document.getElementById('edit_contact_modal');
+    if (contactModal && !contactModal.classList.contains('hidden')) {
+        closeEditContactModal();
+        return true;
+    }
+
+    // 3. Check if Confirm Fire Modal is open
+    const confirmModal = document.getElementById('confirm_modal');
+    if (confirmModal && !confirmModal.classList.contains('hidden')) {
+        closeConfirmModal();
+        return true;
+    }
+
+    // 4. Check if Custom Dropdowns are open
+    const tailorMenu = document.getElementById('tailor_select_menu');
+    if (tailorMenu && !tailorMenu.classList.contains('hidden')) {
+        closeTailorCustomDropdown();
+        return true;
+    }
+    const periodMenu = document.getElementById('dash_period_menu');
+    if (periodMenu && !periodMenu.classList.contains('hidden')) {
+        closeDashPeriodDropdown();
+        return true;
+    }
+
+    // 5. Check if Add Work Form is open
+    const addWorkSec = document.getElementById('add_work_section');
+    if (addWorkSec && !addWorkSec.classList.contains('hidden')) {
+        toggleAddWorkForm();
+        return true;
+    }
+
+    // 6. If inside Tailor Ledger with a tailor selected, clear selection
+    if (currentTab === 'ledger' && currentEmployee) {
+        clearSelection();
+        return true;
+    }
+
+    // 7. If in a tab other than Dashboard ('overview'), return to Dashboard
+    if (currentTab !== 'overview') {
+        switchTab('overview', false);
+        return true;
+    }
+
+    // 8. Already on Dashboard root: Exit Protection (Double-tap back)
+    const now = Date.now();
+    if (now - lastBackPressTime < 2000) {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+            window.Capacitor.Plugins.App.exitApp();
+        }
+        return false;
+    } else {
+        lastBackPressTime = now;
+        showToast("Press back again to exit Modern Man", "info");
+        history.pushState({ page: 'root' }, '');
+        return true;
+    }
+}
+
 window.onload = function () {
     const today = new Date().toISOString().split('T')[0];
     const logDateInput = document.getElementById('log_date');
@@ -22,6 +92,28 @@ window.onload = function () {
     if (currentTab === 'overview') fetchGlobalOverview();
     if (currentTab === 'transactions') fetchGlobalTransactions();
     updateDisplays();
+
+    // Push initial history state for mobile back button interception
+    try {
+        history.replaceState({ page: 'root' }, '');
+        history.pushState({ page: 'app' }, '');
+    } catch (e) {}
+
+    window.addEventListener('popstate', (e) => {
+        const handled = handleBackNavigation();
+        if (handled) {
+            try {
+                history.pushState({ page: 'app' }, '');
+            } catch (err) {}
+        }
+    });
+
+    // Native Capacitor back button handler
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.addListener('backButton', () => {
+            handleBackNavigation();
+        });
+    }
 
     document.addEventListener('click', (e) => {
         const tailorContainer = document.getElementById('custom_tailor_dropdown_container');
@@ -121,7 +213,10 @@ function applyTheme(theme) {
 
 // --- Navigation Tabs ---
 
-function switchTab(tab) {
+function switchTab(tab, pushHistory = true) {
+    if (pushHistory && tab !== currentTab) {
+        try { history.pushState({ tab: tab }, ''); } catch (e) {}
+    }
     currentTab = tab;
     ['overview', 'ledger', 'transactions', 'staff'].forEach(t => {
         const btn = document.getElementById(`tab_${t}`);
