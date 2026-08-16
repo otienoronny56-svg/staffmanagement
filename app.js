@@ -1303,6 +1303,15 @@ function shareWhatsAppSlip() {
 
     const periodLabel = activeFilter === 'all' ? 'All Time' : (activeFilter === 'month' ? 'This Month' : (activeFilter === 'week' ? 'This Week' : 'Today'));
 
+    let balanceText = "";
+    if (balanceDue > 0) {
+        balanceText = `👉 *Net Payout Due to Tailor:* ${formatMoney(balanceDue)}`;
+    } else if (balanceDue < 0) {
+        balanceText = `⚠️ *Advance Overdrawn (Tailor Debt):* ${formatMoney(Math.abs(balanceDue))} (To be deducted from next week's work)`;
+    } else {
+        balanceText = `✅ *Account Status:* Fully Settled (${formatMoney(0)})`;
+    }
+
     const msg = 
 `🧵 *MODERNMAN CLOTHING LIMITED*
 *Tailor Salary & Production Slip*
@@ -1315,7 +1324,7 @@ function shareWhatsAppSlip() {
 ${itemsText}--------------------------------
 💰 *Gross Earned:* ${formatMoney(totalEarned)}
 ☕ *Advances/Paid:* -${formatMoney(totalPaid)}
-👉 *Net Balance Due:* ${formatMoney(balanceDue)}
+${balanceText}
 --------------------------------
 _Modernman Clothing Ltd — Automated Statement_`;
 
