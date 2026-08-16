@@ -738,7 +738,25 @@ function renderDashboardStats(list) {
     `}).join('');
 }
 
-// --- Toggle Add Work Form ---
+// --- Toggle Add Work Form & Auto-Pricing ---
+
+const GARMENT_STANDARD_RATES = {
+    'Blazer': 150,
+    'Trouser / Pant': 100,
+    'Waist Coat': 100,
+    'Shirt (Official/African)': 100,
+    'Dress': 100,
+    'Skirt': 100,
+    'Repair / Alteration': 50
+};
+
+function onGarmentTypeChange(type) {
+    const rateInput = document.getElementById('unit_cost');
+    if (rateInput && GARMENT_STANDARD_RATES[type] !== undefined) {
+        rateInput.value = GARMENT_STANDARD_RATES[type];
+    }
+    calculateEntryPreview();
+}
 
 function toggleAddWorkForm() {
     const sec = document.getElementById('add_work_section');
@@ -748,6 +766,19 @@ function toggleAddWorkForm() {
     const isHidden = sec.classList.contains('hidden');
     sec.classList.toggle('hidden', !isHidden);
     if (btn) btn.innerHTML = isHidden ? '<span>✕ Close Form</span>' : '<span>➕ Add Work</span>';
+
+    if (isHidden) {
+        const typeSelect = document.getElementById('garment_type');
+        const qtyInput = document.getElementById('qty');
+        const costInput = document.getElementById('unit_cost');
+        if (typeSelect && (!costInput.value || costInput.value === '')) {
+            onGarmentTypeChange(typeSelect.value);
+        }
+        if (qtyInput && !qtyInput.value) {
+            qtyInput.value = '1';
+        }
+        calculateEntryPreview();
+    }
 }
 
 function calculateEntryPreview() {
@@ -960,6 +991,7 @@ function renderLedgerRecords() {
                 date: e.date,
                 category: 'job',
                 title: e.type,
+                note: e.description || e.notes || '',
                 subtitle: `${e.qty} pcs @ ${formatMoney(e.unit_cost)}`,
                 total: total,
                 paid: paidAmt,
@@ -1005,14 +1037,19 @@ function renderLedgerRecords() {
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <h4 class="font-bold text-sm">${r.title}</h4>
+                                <h4 class="font-bold text-sm" style="color: var(--text-main);">${r.title}</h4>
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'}">
                                     ${isDone ? 'Completed' : 'In Progress'}
                                 </span>
                             </div>
-                            <div class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                            <div class="text-xs font-medium mt-0.5" style="color: var(--text-muted);">
                                  ${formatDate(r.date)} • <strong>${r.subtitle}</strong>
                             </div>
+                            ${r.note ? `
+                                <div class="text-[11px] text-blue-600 dark:text-blue-400 font-semibold mt-1 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-md inline-flex">
+                                    <span>🏷️</span><span>${r.note}</span>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
 
@@ -1086,6 +1123,8 @@ async function addEntry() {
     const qty = parseInt(document.getElementById('qty').value);
     const cost = parseFloat(document.getElementById('unit_cost').value);
     const date = document.getElementById('log_date').value;
+    const noteInput = document.getElementById('order_note');
+    const note = noteInput ? noteInput.value.trim() : '';
 
     if (isNaN(qty) || qty <= 0) {
         showToast("Enter valid quantity sewn", "error");
@@ -1105,8 +1144,18 @@ async function addEntry() {
             unit_cost: cost
         };
         if (date) insertObj.created_at = date + 'T12:00:00';
+        if (note) insertObj.description = note;
 
-        const { data, error } = await db.from('production_logs').insert([insertObj]).select();
+        let { data, error } = await db.from('production_logs').insert([insertObj]).select();
+        
+        // If description column not present in schema, fallback gracefully
+        if (error && note) {
+            delete insertObj.description;
+            const fallback = await db.from('production_logs').insert([insertObj]).select();
+            data = fallback.data;
+            error = fallback.error;
+        }
+
         if (error) throw error;
 
         productionEntries.unshift({
@@ -1115,11 +1164,14 @@ async function addEntry() {
             qty: data[0].quantity,
             unit_cost: data[0].unit_cost,
             type: data[0].garment_type,
+            description: note || data[0].description || '',
             status: data[0].status || 'in_production'
         });
 
-        document.getElementById('qty').value = '';
-        document.getElementById('unit_cost').value = '';
+        document.getElementById('qty').value = '1';
+        if (noteInput) noteInput.value = '';
+        const typeSelect = document.getElementById('garment_type');
+        if (typeSelect) onGarmentTypeChange(typeSelect.value);
         calculateEntryPreview();
         toggleAddWorkForm(); // Close form after saving
 

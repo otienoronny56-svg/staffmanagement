@@ -503,7 +503,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <div class="sm:col-span-2 space-y-1">
                             <label class="text-xs font-semibold text-slate-500">Garment Type</label>
-                            <select id="garment_type" class="w-full rounded-xl p-2.5 text-sm font-medium outline-none">
+                            <select id="garment_type" onchange="onGarmentTypeChange(this.value)" class="w-full rounded-xl p-2.5 text-sm font-medium outline-none">
                                 <option value="Blazer">Blazer / Suit Jacket</option>
                                 <option value="Trouser / Pant">Trouser / Pant</option>
                                 <option value="Waist Coat">Waist Coat</option>
@@ -519,7 +519,11 @@
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-semibold text-slate-500">Rate per Piece (KSh)</label>
-                            <input type="number" id="unit_cost" oninput="calculateEntryPreview()" min="0" class="w-full rounded-xl p-2.5 text-sm font-bold" placeholder="e.g. 800">
+                            <input type="number" id="unit_cost" oninput="calculateEntryPreview()" min="0" class="w-full rounded-xl p-2.5 text-sm font-bold" placeholder="e.g. 150">
+                        </div>
+                        <div class="sm:col-span-4 space-y-1">
+                            <label class="text-xs font-semibold text-slate-500">Customer / Order Reference <span class="text-[10px] text-slate-400 font-normal">(Optional, e.g. Albert Beckman - Wedding, Brian Navy Pant)</span></label>
+                            <input type="text" id="order_note" class="w-full rounded-xl p-2.5 text-sm font-semibold" placeholder="e.g. Albert Beckman - Wedding, Brian - Navy pant...">
                         </div>
                     </div>
 
