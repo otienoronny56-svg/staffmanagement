@@ -1047,19 +1047,6 @@ function updateDisplays() {
         }
     }
 
-    // Update Footer if on Ledger Tab
-    if (currentTab === 'ledger') {
-        const displayTotal = document.getElementById('display_total');
-        const displayPaid = document.getElementById('display_paid');
-        const displayBalance = document.getElementById('display_balance');
-        if (displayTotal) displayTotal.innerText = formatMoney(gross);
-        if (displayPaid) displayPaid.innerText = formatMoney(paid);
-        if (displayBalance) {
-            displayBalance.innerText = formatMoney(balance);
-            displayBalance.className = `text-base sm:text-lg font-black font-heading leading-tight ${balance < 0 ? 'text-red-500 dark:text-red-400' : (balance === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400')}`;
-        }
-    }
-
     renderLedgerRecords();
 }
 
