@@ -218,7 +218,7 @@ function switchTab(tab, pushHistory = true) {
         try { history.pushState({ tab: tab }, ''); } catch (e) {}
     }
     currentTab = tab;
-    ['overview', 'ledger', 'transactions', 'staff'].forEach(t => {
+    ['overview', 'ledger', 'transactions', 'payroll', 'staff'].forEach(t => {
         const btn = document.getElementById(`tab_${t}`);
         const sec = document.getElementById(`section_${t}`);
         if (btn) btn.classList.toggle('active', t === tab);
@@ -227,6 +227,7 @@ function switchTab(tab, pushHistory = true) {
 
     if (tab === 'overview') fetchGlobalOverview();
     if (tab === 'ledger' && currentEmployee) loadFromCloud();
+    if (tab === 'payroll') renderPayrollSheet();
     if (tab === 'staff') fetchEmployees();
     if (tab === 'transactions') fetchGlobalTransactions();
 }
@@ -1204,6 +1205,281 @@ function renderLedgerRecords() {
             </div>`;
         }
     }).join('');
+
+    updateGarmentTallyTable();
+}
+
+// --- Garment Production Wage Calculation Tally (Exact Book Replica) ---
+
+function updateGarmentTallyTable() {
+    const tbody = document.getElementById('garment_tally_tbody');
+    const totalQtyEl = document.getElementById('garment_tally_total_qty');
+    const totalCostEl = document.getElementById('garment_tally_total_cost');
+    const piecesBadge = document.getElementById('garment_tally_pieces');
+    if (!tbody) return;
+
+    if (productionEntries.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-400 italic text-[11px]">No production logged for this period.</td></tr>`;
+        if (totalQtyEl) totalQtyEl.innerText = '0';
+        if (totalCostEl) totalCostEl.innerText = formatMoney(0);
+        if (piecesBadge) piecesBadge.innerText = '0 Pieces';
+        return;
+    }
+
+    const tallyMap = {};
+    let sumQty = 0;
+    let sumCost = 0;
+
+    productionEntries.forEach(entry => {
+        const key = `${entry.type}_${entry.unit_cost}`;
+        if (!tallyMap[key]) {
+            tallyMap[key] = {
+                type: entry.type,
+                unit_cost: entry.unit_cost,
+                qty: 0,
+                total: 0
+            };
+        }
+        tallyMap[key].qty += (entry.qty || 0);
+        tallyMap[key].total += ((entry.qty || 0) * (entry.unit_cost || 0));
+        sumQty += (entry.qty || 0);
+        sumCost += ((entry.qty || 0) * (entry.unit_cost || 0));
+    });
+
+    const rows = Object.values(tallyMap).sort((a, b) => b.total - a.total);
+
+    tbody.innerHTML = rows.map(r => `
+        <tr class="hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+            <td class="p-2 font-bold text-xs" style="color: var(--text-main);">${r.type}</td>
+            <td class="p-2 text-center text-xs font-bold text-blue-600 dark:text-blue-400">${r.qty}</td>
+            <td class="p-2 text-right text-xs">${formatMoney(r.unit_cost)}</td>
+            <td class="p-2 text-right text-xs font-bold font-heading" style="color: var(--text-main);">${formatMoney(r.total)}</td>
+        </tr>
+    `).join('');
+
+    if (totalQtyEl) totalQtyEl.innerText = sumQty;
+    if (totalCostEl) totalCostEl.innerText = formatMoney(sumCost);
+    if (piecesBadge) piecesBadge.innerText = `${sumQty} Piece${sumQty === 1 ? '' : 's'}`;
+}
+
+// --- Quick Advance Chips Helper ---
+
+function setQuickExpenseAmount(amt) {
+    const input = document.getElementById('pay_exp_amount');
+    if (input) {
+        input.value = amt;
+        input.focus();
+    }
+}
+
+// --- 1-Tap WhatsApp Salary Slip ---
+
+function shareWhatsAppSlip() {
+    if (!currentEmployee) {
+        showToast("Please select a tailor first", "error");
+        return;
+    }
+
+    const name = currentEmployee.full_name;
+    const phone = currentEmployee.phone || '';
+
+    const tallyMap = {};
+    let totalEarned = 0;
+    let totalPieces = 0;
+
+    productionEntries.forEach(e => {
+        const key = `${e.type} @ ${formatMoney(e.unit_cost)}`;
+        if (!tallyMap[key]) {
+            tallyMap[key] = { qty: 0, total: 0 };
+        }
+        tallyMap[key].qty += (e.qty || 0);
+        tallyMap[key].total += ((e.qty || 0) * (e.unit_cost || 0));
+        totalEarned += ((e.qty || 0) * (e.unit_cost || 0));
+        totalPieces += (e.qty || 0);
+    });
+
+    let totalPaid = 0;
+    advances.forEach(a => {
+        totalPaid += (a.amount || 0);
+    });
+
+    const balanceDue = currentEmployeeAllTimeBalance;
+
+    let itemsText = "";
+    Object.keys(tallyMap).forEach(key => {
+        itemsText += `• ${tallyMap[key].qty}x ${key} = ${formatMoney(tallyMap[key].total)}\n`;
+    });
+
+    if (!itemsText) {
+        itemsText = "• No production logged in this period\n";
+    }
+
+    const periodLabel = activeFilter === 'all' ? 'All Time' : (activeFilter === 'month' ? 'This Month' : (activeFilter === 'week' ? 'This Week' : 'Today'));
+
+    const msg = 
+`🧵 *MODERNMAN CLOTHING LIMITED*
+*Tailor Salary & Production Slip*
+--------------------------------
+👤 *Tailor:* ${name}
+📅 *Period:* ${periodLabel}
+📦 *Total Pieces:* ${totalPieces} pcs
+
+📊 *Workdone Wage Calculation:*
+${itemsText}--------------------------------
+💰 *Gross Earned:* ${formatMoney(totalEarned)}
+☕ *Advances/Paid:* -${formatMoney(totalPaid)}
+👉 *Net Balance Due:* ${formatMoney(balanceDue)}
+--------------------------------
+_Modernman Clothing Ltd — Automated Statement_`;
+
+    let cleanPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) {
+        cleanPhone = '254' + cleanPhone.substring(1);
+    } else if (cleanPhone.startsWith('7') || cleanPhone.startsWith('1')) {
+        cleanPhone = '254' + cleanPhone;
+    }
+
+    let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    if (cleanPhone && cleanPhone.length >= 9) {
+        url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
+    }
+
+    window.open(url, '_blank');
+}
+
+// --- Team Weekly Payroll Sheet Controller ---
+
+async function renderPayrollSheet() {
+    const tbody = document.getElementById('payroll_tbody');
+    const totalGrossEl = document.getElementById('payroll_total_gross');
+    const totalAdvEl = document.getElementById('payroll_total_advances');
+    const totalNetEl = document.getElementById('payroll_total_net');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 italic text-xs">Loading payroll sheet...</td></tr>`;
+
+    try {
+        const [prodRes, payRes] = await Promise.all([
+            db.from('production_logs').select('*'),
+            db.from('payment_logs').select('*')
+        ]);
+
+        const allProd = prodRes.data || [];
+        const allPay = payRes.data || [];
+
+        let grandGross = 0;
+        let grandAdv = 0;
+        let grandNet = 0;
+
+        const payrollData = allEmployees.map(emp => {
+            const empProd = allProd.filter(p => p.employee_name === emp.full_name);
+            const empPay = allPay.filter(p => p.employee_name === emp.full_name);
+
+            const gross = empProd.reduce((sum, p) => sum + (parseFloat(p.quantity || 0) * parseFloat(p.unit_cost || 0)), 0);
+            const advances = empPay.reduce((sum, p) => sum + parseFloat(p.amount_paid || 0), 0);
+            const netDue = gross - advances;
+
+            grandGross += gross;
+            grandAdv += advances;
+            if (netDue > 0) grandNet += netDue;
+
+            return {
+                id: emp.id,
+                name: emp.full_name,
+                phone: emp.phone || '',
+                gross: gross,
+                advances: advances,
+                netDue: netDue
+            };
+        }).sort((a, b) => b.netDue - a.netDue);
+
+        if (payrollData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 italic text-xs">No registered tailors.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = payrollData.map(p => {
+            const initials = getInitials(p.name);
+            const isSettled = p.netDue === 0;
+            const isOwed = p.netDue < 0;
+
+            let netBadge = `<span class="font-extrabold text-xs text-amber-600 dark:text-amber-400 font-heading">${formatMoney(p.netDue)}</span>`;
+            if (isSettled) {
+                netBadge = `<span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">✓ Settled</span>`;
+            } else if (isOwed) {
+                netBadge = `<span class="text-xs font-bold text-red-500">${formatMoney(p.netDue)} (Owes)</span>`;
+            }
+
+            return `
+                <tr class="hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+                    <td class="p-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shrink-0">
+                                ${initials}
+                            </div>
+                            <div>
+                                <div class="font-bold text-xs" style="color: var(--text-main);">${p.name}</div>
+                                ${p.phone ? `<div class="text-[10px] text-blue-500 font-medium">📞 ${p.phone}</div>` : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3 text-right text-xs font-semibold" style="color: var(--text-main);">${formatMoney(p.gross)}</td>
+                    <td class="p-3 text-right text-xs font-semibold text-emerald-600 dark:text-emerald-400">-${formatMoney(p.advances)}</td>
+                    <td class="p-3 text-right">${netBadge}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            ${p.netDue > 0 ? `
+                                <button onclick="quickSettlePayroll('${p.name}', ${p.netDue})"
+                                    class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-sm transition-all flex items-center gap-1">
+                                    <span>💵 Pay & Settle</span>
+                                </button>
+                            ` : ''}
+                            <button onclick="selectEmployeeByName('${p.name}')"
+                                class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-200 text-[11px] font-bold transition-all">
+                                <span>Ledger</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        if (totalGrossEl) totalGrossEl.innerText = formatMoney(grandGross);
+        if (totalAdvEl) totalAdvEl.innerText = formatMoney(grandAdv);
+        if (totalNetEl) totalNetEl.innerText = formatMoney(grandNet);
+
+    } catch (err) {
+        console.error("Payroll error:", err);
+        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400 italic text-xs">Error loading payroll data.</td></tr>`;
+    }
+}
+
+async function quickSettlePayroll(tailorName, amount) {
+    if (!tailorName || amount <= 0) return;
+    if (!confirm(`Settle full net payout of ${formatMoney(amount)} to ${tailorName}?`)) {
+        return;
+    }
+
+    setSyncStatus('syncing');
+    try {
+        const { error } = await db.from('payment_logs').insert([{
+            employee_name: tailorName,
+            amount_paid: amount,
+            description: 'Weekly Net Payout Settlement'
+        }]);
+
+        if (error) throw error;
+        showToast(`Settled ${formatMoney(amount)} payout to ${tailorName}!`, "success");
+        setSyncStatus('success');
+        await renderPayrollSheet();
+        if (currentEmployee && currentEmployee.full_name === tailorName) {
+            await loadFromCloud();
+        }
+    } catch (err) {
+        console.error("Settle payout error:", err);
+        setSyncStatus('error');
+        showToast("Failed to record settlement payment", "error");
+    }
 }
 
 // --- CRUD ---

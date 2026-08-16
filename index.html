@@ -290,6 +290,12 @@
                 </svg>
                 <span>Activity Log</span>
             </button>
+            <button onclick="switchTab('payroll')" id="tab_payroll" class="tab-btn flex-1 justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Payroll Sheet</span>
+            </button>
             <button onclick="switchTab('staff')" id="tab_staff" class="tab-btn flex-1 justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -463,12 +469,15 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="flex items-center gap-2">
-                            <button onclick="openPaymentModal()" class="px-4 py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="openPaymentModal()" class="px-3.5 py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
                                 <span>💵 Issue Payment</span>
                             </button>
-                            <button onclick="toggleAddWorkForm()" id="toggle_work_btn" class="px-4 py-2.5 rounded-xl btn-secondary text-xs font-bold flex items-center gap-1.5">
+                            <button onclick="toggleAddWorkForm()" id="toggle_work_btn" class="px-3.5 py-2.5 rounded-xl btn-secondary text-xs font-bold flex items-center gap-1.5">
                                 <span>➕ Add Work</span>
+                            </button>
+                            <button onclick="shareWhatsAppSlip()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition-all">
+                                <span>📲 WhatsApp Slip</span>
                             </button>
                         </div>
                     </div>
@@ -486,6 +495,41 @@
                         <div class="p-2 sm:p-3 rounded-xl bg-black/5 dark:bg-white/5">
                             <span class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Balance Due</span>
                             <span id="ledger_stat_balance" class="text-xs sm:text-base font-black font-heading text-blue-600 dark:text-blue-400">KSh 0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Garment Production Summary Table (Book Replica) -->
+                    <div id="ledger_garment_tally_card" class="mt-4 pt-3 border-t border-slate-200/60 dark:border-white/10 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs">📊</span>
+                                <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Wage Calculation (Garments Tally)</h3>
+                            </div>
+                            <span id="garment_tally_pieces" class="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">0 Pieces</span>
+                        </div>
+                        
+                        <div class="overflow-x-auto no-scrollbar rounded-xl border" style="border-color: var(--card-border);">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-black/5 dark:bg-white/5 font-bold uppercase text-[10px] text-slate-400">
+                                    <tr>
+                                        <th class="p-2">Garment</th>
+                                        <th class="p-2 text-center">Number</th>
+                                        <th class="p-2 text-right">Unit Cost</th>
+                                        <th class="p-2 text-right">Total Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="garment_tally_tbody" class="divide-y divide-black/5 dark:divide-white/5 font-semibold">
+                                    <tr><td colspan="4" class="p-3 text-center text-slate-400 italic text-[11px]">No production logged for this period.</td></tr>
+                                </tbody>
+                                <tfoot class="bg-black/5 dark:bg-white/5 font-black text-xs border-t" style="border-color: var(--card-border);">
+                                    <tr>
+                                        <td class="p-2 font-bold uppercase text-[11px]">Total Workdone</td>
+                                        <td id="garment_tally_total_qty" class="p-2 text-center text-blue-600 dark:text-blue-400 font-bold">0</td>
+                                        <td class="p-2 text-right text-slate-400">-</td>
+                                        <td id="garment_tally_total_cost" class="p-2 text-right font-heading text-xs sm:text-sm text-blue-600 dark:text-blue-400 font-extrabold">KSh 0.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -638,6 +682,52 @@
                 </div>
                 <div id="staff_full_list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
             </div>
+        <!-- ==================== PAYROLL SHEET TAB ==================== -->
+        <section id="section_payroll" class="space-y-4 hidden">
+            <!-- Header & Period Filter -->
+            <div class="glass-card rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-bold tracking-tight">Team Weekly Payroll Sheet</h2>
+                    <p class="text-xs text-slate-400">Review wage calculations, advances, and settle payouts for all tailors</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="renderPayrollSheet()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0 px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh Payroll
+                    </button>
+                </div>
+            </div>
+
+            <!-- Payroll Master Table -->
+            <div class="glass-card rounded-2xl p-4 space-y-3">
+                <div id="payroll_table_container" class="overflow-x-auto no-scrollbar rounded-xl border" style="border-color: var(--card-border);">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-black/5 dark:bg-white/5 font-bold uppercase text-[10px] text-slate-400">
+                            <tr>
+                                <th class="p-3">Tailor</th>
+                                <th class="p-3 text-right">Gross Earned</th>
+                                <th class="p-3 text-right">Advances Paid</th>
+                                <th class="p-3 text-right">Net Payout Due</th>
+                                <th class="p-3 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payroll_tbody" class="divide-y divide-black/5 dark:divide-white/5 font-semibold">
+                            <tr><td colspan="5" class="p-8 text-center text-slate-400 italic text-xs">Loading payroll sheet...</td></tr>
+                        </tbody>
+                        <tfoot class="bg-black/5 dark:bg-white/5 font-black text-xs border-t" style="border-color: var(--card-border);">
+                            <tr>
+                                <td class="p-3 font-bold">TOTAL PAYROLL</td>
+                                <td id="payroll_total_gross" class="p-3 text-right">KSh 0.00</td>
+                                <td id="payroll_total_advances" class="p-3 text-right text-emerald-600 dark:text-emerald-400 font-bold">KSh 0.00</td>
+                                <td id="payroll_total_net" class="p-3 text-right font-heading text-sm text-amber-600 dark:text-amber-400 font-extrabold">KSh 0.00</td>
+                                <td class="p-3 text-center">-</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
         </section>
 
     </main>
@@ -692,10 +782,18 @@
                 <p class="text-xs text-slate-400">Record cash advance for lunch, transport, upkeep, or emergency allowance.</p>
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500">Reason / Note</label>
-                    <input type="text" id="pay_exp_desc" placeholder="e.g. Lunch Allowance, Transport..." class="w-full rounded-xl p-3 text-sm">
+                    <input type="text" id="pay_exp_desc" placeholder="e.g. Lunch Allowance, Transport, Friday Upkeep..." class="w-full rounded-xl p-3 text-sm">
                 </div>
-                <div class="space-y-1">
-                    <label class="text-xs font-semibold text-slate-500">Cash Amount (KSh)</label>
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-slate-500">Cash Amount (KSh)</label>
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="setQuickExpenseAmount(200)" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 border" style="border-color: var(--card-border);">+200</button>
+                            <button type="button" onclick="setQuickExpenseAmount(500)" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 border" style="border-color: var(--card-border);">+500</button>
+                            <button type="button" onclick="setQuickExpenseAmount(1000)" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 border" style="border-color: var(--card-border);">+1,000</button>
+                            <button type="button" onclick="setQuickExpenseAmount(2000)" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 border" style="border-color: var(--card-border);">+2,000</button>
+                        </div>
+                    </div>
                     <input type="number" id="pay_exp_amount" placeholder="0.00" class="w-full rounded-xl p-3 text-lg font-bold">
                 </div>
                 <button onclick="submitExpensePayment()"
