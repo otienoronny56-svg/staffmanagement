@@ -1349,28 +1349,28 @@ async function shareWhatsAppSlip(tailorObj = null) {
 
     let balanceText = "";
     if (balanceDue > 0) {
-        balanceText = `👉 *Net Payout Due to Tailor:* ${formatMoney(balanceDue)}`;
+        balanceText = `*Net Payout Due to Tailor:* ${formatMoney(balanceDue)}`;
     } else if (balanceDue < 0) {
-        balanceText = `⚠️ *Advance Overdrawn (Tailor Debt):* ${formatMoney(Math.abs(balanceDue))} (To be deducted from next week's work)`;
+        balanceText = `*Advance Overdrawn (Tailor Debt):* ${formatMoney(Math.abs(balanceDue))} (To be deducted from next week's work)`;
     } else {
-        balanceText = `✅ *Account Status:* Fully Settled (${formatMoney(0)})`;
+        balanceText = `*Account Status:* Fully Settled (${formatMoney(0)})`;
     }
 
     const msg = 
-`🧵 *MODERNMAN CLOTHING LIMITED*
+`*MODERNMAN CLOTHING LIMITED*
 *Tailor Salary & Production Slip*
 --------------------------------
-👤 *Tailor:* ${name}
-📅 *Period:* ${periodLabel}
-📦 *Total Pieces:* ${totalPieces} pcs
+*Tailor:* ${name}
+*Period:* ${periodLabel}
+*Total Pieces:* ${totalPieces} pcs
 
-📊 *Workdone Wage Calculation:*
+*Workdone Wage Calculation:*
 ${itemsText}--------------------------------
-💰 *Gross Earned:* ${formatMoney(totalEarned)}
-☕ *Advances/Paid:* -${formatMoney(totalPaid)}
+*Gross Earned:* ${formatMoney(totalEarned)}
+*Advances/Paid:* -${formatMoney(totalPaid)}
 ${balanceText}
 --------------------------------
-_Modernman Clothing Ltd — Automated Statement_`;
+_Modernman Clothing Ltd — Official Statement_`;
 
     let cleanPhone = (phone || '').replace(/[^0-9]/g, '');
     if (cleanPhone.startsWith('0')) {
