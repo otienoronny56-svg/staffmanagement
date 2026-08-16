@@ -1261,20 +1261,64 @@ function setQuickExpenseAmount(amt) {
 
 // --- 1-Tap WhatsApp Salary Slip ---
 
-function shareWhatsAppSlip() {
-    if (!currentEmployee) {
+async function shareWhatsAppSlip(tailorObj = null) {
+    const tailor = tailorObj || currentEmployee;
+    if (!tailor) {
         showToast("Please select a tailor first", "error");
         return;
     }
 
-    const name = currentEmployee.full_name;
-    const phone = currentEmployee.phone || '';
+    const name = tailor.full_name;
+    let phone = tailor.phone || '';
+
+    // If phone is missing, prompt to enter once and save permanently
+    if (!phone || phone.trim() === '') {
+        const enteredPhone = prompt(`Enter WhatsApp phone number for ${name} (e.g. 0712 345 678):`);
+        if (enteredPhone && enteredPhone.trim() !== '') {
+            phone = enteredPhone.trim();
+            // Save to database
+            try {
+                await db.from('employees').update({ phone: phone }).eq('id', tailor.id);
+                tailor.phone = phone;
+                const empInList = allEmployees.find(e => e.id === tailor.id);
+                if (empInList) empInList.phone = phone;
+                showToast("Phone number saved permanently!", "success");
+            } catch (err) {
+                console.error("Save phone error:", err);
+            }
+        }
+    }
 
     const tallyMap = {};
     let totalEarned = 0;
     let totalPieces = 0;
 
-    productionEntries.forEach(e => {
+    let targetProd = productionEntries;
+    let targetAdv = advances;
+    let balanceDue = currentEmployeeAllTimeBalance;
+
+    // If triggered from payroll sheet for a different tailor
+    if (tailorObj && (!currentEmployee || currentEmployee.id !== tailorObj.id)) {
+        try {
+            const [pRes, aRes] = await Promise.all([
+                db.from('production_logs').select('*').eq('employee_name', name),
+                db.from('payment_logs').select('*').eq('employee_name', name)
+            ]);
+            targetProd = (pRes.data || []).map(p => ({
+                type: p.garment_type,
+                qty: parseInt(p.quantity) || 1,
+                unit_cost: parseFloat(p.unit_cost) || 0
+            }));
+            targetAdv = (aRes.data || []).map(a => ({
+                amount: parseFloat(a.amount_paid) || 0
+            }));
+            const g = targetProd.reduce((s, x) => s + (x.qty * x.unit_cost), 0);
+            const a = targetAdv.reduce((s, x) => s + x.amount, 0);
+            balanceDue = g - a;
+        } catch (e) {}
+    }
+
+    targetProd.forEach(e => {
         const key = `${e.type} @ ${formatMoney(e.unit_cost)}`;
         if (!tallyMap[key]) {
             tallyMap[key] = { qty: 0, total: 0 };
@@ -1286,11 +1330,9 @@ function shareWhatsAppSlip() {
     });
 
     let totalPaid = 0;
-    advances.forEach(a => {
+    targetAdv.forEach(a => {
         totalPaid += (a.amount || 0);
     });
-
-    const balanceDue = currentEmployeeAllTimeBalance;
 
     let itemsText = "";
     Object.keys(tallyMap).forEach(key => {
@@ -1328,7 +1370,7 @@ ${balanceText}
 --------------------------------
 _Modernman Clothing Ltd — Automated Statement_`;
 
-    let cleanPhone = phone.replace(/[^0-9]/g, '');
+    let cleanPhone = (phone || '').replace(/[^0-9]/g, '');
     if (cleanPhone.startsWith('0')) {
         cleanPhone = '254' + cleanPhone.substring(1);
     } else if (cleanPhone.startsWith('7') || cleanPhone.startsWith('1')) {
@@ -1337,7 +1379,7 @@ _Modernman Clothing Ltd — Automated Statement_`;
 
     let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
     if (cleanPhone && cleanPhone.length >= 9) {
-        url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
+        url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
     }
 
     window.open(url, '_blank');
@@ -1385,7 +1427,8 @@ async function renderPayrollSheet() {
                 phone: emp.phone || '',
                 gross: gross,
                 advances: advances,
-                netDue: netDue
+                netDue: netDue,
+                rawEmp: emp
             };
         }).sort((a, b) => b.netDue - a.netDue);
 
@@ -1415,7 +1458,7 @@ async function renderPayrollSheet() {
                             </div>
                             <div>
                                 <div class="font-bold text-xs" style="color: var(--text-main);">${p.name}</div>
-                                ${p.phone ? `<div class="text-[10px] text-blue-500 font-medium">📞 ${p.phone}</div>` : ''}
+                                ${p.phone ? `<div class="text-[10px] text-blue-500 font-medium">📞 ${p.phone}</div>` : `<button onclick="editTailorContact('${p.id}', '${p.name}', '')" class="text-[10px] text-slate-400 hover:text-blue-500 underline">+ Add Phone</button>`}
                             </div>
                         </div>
                     </td>
@@ -1430,6 +1473,11 @@ async function renderPayrollSheet() {
                                     <span>💵 Pay & Settle</span>
                                 </button>
                             ` : ''}
+                            <button onclick="shareWhatsAppSlip(${JSON.stringify(p.rawEmp).replace(/"/g, '&quot;')})"
+                                title="Send WhatsApp Slip"
+                                class="px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold transition-all flex items-center gap-1 hover:bg-emerald-100">
+                                <span>📲 WhatsApp</span>
+                            </button>
                             <button onclick="selectEmployeeByName('${p.name}')"
                                 class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-200 text-[11px] font-bold transition-all">
                                 <span>Ledger</span>
