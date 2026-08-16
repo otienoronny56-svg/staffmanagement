@@ -5,503 +5,732 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Modern Man | Business Edition</title>
+    <title>Modern Man | Tailor & Salary Suite</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧵</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['selector', '[data-theme="dark"]'],
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #fcfdfe;
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --card-border: rgba(255, 255, 255, 0.2);
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
             --text-main: #0f172a;
-            --text-muted: #64748b;
-            --accent: #000000;
+            --text-muted: #475569;
+            --accent: #0f172a;
             --accent-soft: #f1f5f9;
-            --indicator-idle: #e2e8f0;
-            --shadow-subtle: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+            --indicator-idle: #94a3b8;
+            --shadow-subtle: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
             --aura-1: #6366f1;
             --aura-2: #3b82f6;
         }
 
         [data-theme="dark"] {
-            --bg-color: #020617;
-            --card-bg: rgba(15, 23, 42, 0.8);
-            --card-border: rgba(255, 255, 255, 0.05);
+            --bg-color: #090d16;
+            --card-bg: rgba(17, 24, 39, 0.9);
+            --card-border: rgba(255, 255, 255, 0.1);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --accent: #ffffff;
-            --accent-soft: #0f172a;
-            --indicator-idle: #1e293b;
-            --shadow-subtle: 0 4px 24px -2px rgba(0, 0, 0, 0.6);
+            --accent-soft: #1e293b;
+            --indicator-idle: #475569;
+            --shadow-subtle: 0 4px 24px -2px rgba(0, 0, 0, 0.5);
             --aura-1: #4338ca;
             --aura-2: #1d4ed8;
-        }
-
-        html,
-        body {
-            overflow-x: hidden;
-            width: 100%;
-            position: relative;
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            transition: background-color 0.5s ease, color 0.5s ease;
-            font-size: 0.875rem;
-            /* Compact Font */
-            line-height: 1.5;
-            letter-spacing: -0.011em;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-size: 0.9375rem;
             margin: 0;
             padding: 0;
         }
 
-        h1,
-        h2,
-        h3,
-        .font-heading {
+        h1, h2, h3, h4, .font-heading {
             font-family: 'Outfit', sans-serif;
             letter-spacing: -0.02em;
         }
 
-        /* Aura Background System */
-        .aura-canvas {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .aura-blob {
-            position: absolute;
-            width: 80vw;
-            height: 80vw;
-            filter: blur(120px);
-            opacity: 0.05;
-            border-radius: 50%;
-            animation: drift 25s infinite alternate ease-in-out;
-        }
-
-        .aura-1 {
-            background: var(--aura-1);
-            top: -20%;
-            left: -10%;
-        }
-
-        .aura-2 {
-            background: var(--aura-2);
-            bottom: -20%;
-            right: -10%;
-            animation-delay: -7s;
-        }
-
-        [data-theme="dark"] .aura-blob {
-            opacity: 0.12;
-        }
-
-        @keyframes drift {
-            from {
-                transform: translate(0, 0) rotate(0deg) scale(1);
-            }
-
-            to {
-                transform: translate(10%, 15%) rotate(90deg) scale(1.1);
-            }
-        }
-
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
             box-shadow: var(--shadow-subtle);
-            transition: all 0.4s ease;
         }
 
-        /* Ultra-Slim Tabs */
         .tab-btn {
             color: var(--text-muted);
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            transition: all 0.25s ease;
-            position: relative;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            border-radius: 0.75rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: var(--accent-soft);
         }
 
         .tab-btn.active {
             color: var(--text-main);
+            background: var(--accent-soft);
+            box-shadow: inset 0 0 0 1px var(--card-border);
         }
 
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 25%;
-            right: 25%;
-            height: 2px;
-            background: var(--accent);
-            border-radius: 10px;
+        .card-hover {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Compact UI Elements */
-        input,
-        select {
+        .card-hover:hover {
+            border-color: rgba(59, 130, 246, 0.35) !important;
+            background-color: var(--accent-soft) !important;
+            transform: translateY(-1px);
+        }
+
+        input, select {
             background-color: var(--accent-soft) !important;
             color: var(--text-main) !important;
-            border: 1px solid transparent !important;
-            font-size: 0.8rem !important;
+            border: 1px solid var(--card-border) !important;
+            transition: all 0.2s ease;
         }
 
-        input:focus,
-        select:focus {
-            background-color: transparent !important;
-            border-color: var(--accent) !important;
+        input:focus, select:focus {
+            background-color: var(--bg-color) !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+            outline: none !important;
         }
 
         .btn-primary {
             background: var(--accent);
             color: var(--bg-color);
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
             font-weight: 700;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease;
         }
 
-        .btn-primary:active {
-            transform: scale(0.97);
+        .btn-primary:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
         }
 
         .btn-secondary {
-            border: 1px solid var(--accent);
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
             color: var(--text-main);
-            font-size: 0.75rem;
             font-weight: 600;
+            transition: all 0.2s ease;
         }
 
-        /* Header Layout Fix */
-        .mini-header {
-            padding: calc(0.75rem + env(safe-area-inset-top)) 1.5rem 0.75rem 1.5rem;
-            border-bottom: 1px solid var(--card-border);
+        .btn-secondary:hover {
+            background: var(--accent-soft);
+        }
+
+        .filter-chip {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.6rem;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            background: var(--accent-soft);
+            color: var(--text-muted);
+        }
+
+        .filter-chip:hover {
+            color: var(--text-main);
+        }
+
+        .filter-chip.active {
+            background: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
         }
 
         .theme-toggle {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
+            border-radius: 10px;
             background: var(--accent-soft);
-            transition: transform 0.2s;
+            border: 1px solid var(--card-border);
         }
 
         .no-scrollbar::-webkit-scrollbar {
             display: none;
+        }
+
+        #toast_container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+
+        .toast-item {
+            pointer-events: auto;
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-size: 11pt !important;
+            }
+            header, nav, #toast_container, .theme-toggle, button, input, select, .no-print {
+                display: none !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+            .glass-card {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                color: #000000 !important;
+                page-break-inside: avoid;
+            }
+            .print-only {
+                display: block !important;
+            }
         }
     </style>
 </head>
 
 <body class="min-h-screen">
 
-    <!-- Aura Background -->
-    <div class="aura-canvas">
-        <div class="aura-blob aura-1"></div>
-        <div class="aura-blob aura-2"></div>
-    </div>
+    <div id="toast_container"></div>
 
-    <!-- Ultra-Compact Header -->
-    <header class="sticky top-0 z-50 glass-card mini-header">
-        <div class="max-w-3xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="flex flex-col">
-                    <h1 class="text-sm font-semibold uppercase tracking-widest leading-none" onclick="location.reload()"
-                        style="cursor: pointer;">Modern Man</h1>
-                    <div class="flex items-center gap-1.5 opacity-40">
-                        <div id="sync_status" class="w-1.5 h-1.5 rounded-full"
-                            style="background: var(--indicator-idle);"></div>
-                        <span class="text-[8px] font-bold uppercase tracking-tighter">Business Suite</span>
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-card border-b px-4" style="padding-top: max(0.75rem, env(safe-area-inset-top)); padding-bottom: 0.75rem; border-color: var(--card-border);">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-black text-base shadow-sm">
+                    MM
+                </div>
+                <div>
+                    <h1 class="text-base font-bold tracking-tight cursor-pointer leading-tight" onclick="location.reload()">
+                        Modern Man <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">Tailor Suite</span>
+                    </h1>
+                    <div class="flex items-center gap-1.5 opacity-60">
+                        <div id="sync_status" class="w-2 h-2 rounded-full" style="background: var(--indicator-idle);"></div>
+                        <span id="sync_text" class="text-[11px] font-medium">Cloud Synced</span>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <input type="date" id="log_date"
-                    class="rounded-md text-[9px] p-1.5 opacity-80 hover:opacity-100 transition-opacity">
-                <button onclick="toggleTheme()" class="theme-toggle" title="Switch Theme">
-                    <svg id="theme_icon_sun" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 hidden" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                <button onclick="handlePrint()" title="Print / Export Statement" class="theme-toggle" style="color: var(--text-main);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
-                    <svg id="theme_icon_moon" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </button>
+                <button onclick="toggleTheme()" class="theme-toggle" title="Switch Light / Dark Theme">
+                    <svg id="theme_icon_sun" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 hidden text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                    </svg>
+                    <svg id="theme_icon_moon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                     </svg>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto p-4 md:p-6 space-y-5"
-        style="padding-bottom: calc(7rem + env(safe-area-inset-bottom));">
+    <main class="max-w-4xl mx-auto p-4 sm:p-6 space-y-5" style="padding-bottom: max(2rem, env(safe-area-inset-bottom));">
 
-        <!-- Slim Tab Navigation -->
-        <nav class="flex justify-start sm:justify-center gap-5 sm:gap-8 border-b border-transparent pb-1 overflow-x-auto no-scrollbar">
-            <button onclick="switchTab('overview')" id="tab_overview"
-                class="tab-btn active uppercase tracking-widest pb-1 shrink-0">Overview</button>
-            <button onclick="switchTab('ledger')" id="tab_ledger"
-                class="tab-btn uppercase tracking-widest pb-1 shrink-0">Ledger</button>
-            <button onclick="switchTab('transactions')" id="tab_transactions"
-                class="tab-btn uppercase tracking-widest pb-1 shrink-0">Transactions</button>
-            <button onclick="switchTab('staff')" id="tab_staff"
-                class="tab-btn uppercase tracking-widest pb-1 shrink-0">Registry</button>
+        <!-- Print Header -->
+        <div class="print-only hidden pb-3 mb-4 border-b-2 border-black">
+            <h1 class="text-xl font-black">Modern Man Tailor Suite</h1>
+            <p class="text-xs text-slate-600">Official Statement & Payout Summary • <span id="print_date_label"></span></p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="glass-card rounded-2xl p-1.5 flex justify-between gap-1 overflow-x-auto no-scrollbar">
+            <button onclick="switchTab('overview')" id="tab_overview" class="tab-btn active flex-1 justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+                <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('ledger')" id="tab_ledger" class="tab-btn flex-1 justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                <span>Tailor Ledger</span>
+            </button>
+            <button onclick="switchTab('transactions')" id="tab_transactions" class="tab-btn flex-1 justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Activity Log</span>
+            </button>
+            <button onclick="switchTab('staff')" id="tab_staff" class="tab-btn flex-1 justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>Tailors Team</span>
+            </button>
         </nav>
 
-        <!-- OVERVIEW TAB -->
-        <section id="section_overview" class="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div class="flex items-center justify-between px-1">
-                <h2 class="text-[8px] font-bold uppercase tracking-widest opacity-30">Global Intelligence</h2>
+        <!-- ==================== DASHBOARD TAB ==================== -->
+        <section id="section_overview" class="space-y-4">
+            
+            <!-- Dashboard Period Filter (Custom Glass Dropdown on Mobile, Chips on Desktop) -->
+            <div class="glass-card rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-2 relative z-30">
+                <!-- Mobile Custom Glass Dropdown (< sm) -->
+                <div class="flex sm:hidden items-center gap-2 flex-1">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0">Period:</span>
+                    <div class="relative flex-1" id="custom_dash_period_container">
+                        <button type="button" id="dash_period_btn" onclick="toggleDashPeriodDropdown()"
+                            class="w-full rounded-xl px-3 py-1.5 flex items-center justify-between gap-2 font-bold text-xs border shadow-sm transition-all text-left card-hover"
+                            style="background-color: var(--accent-soft); border-color: var(--card-border); color: var(--text-main);">
+                            <span id="dash_period_label" class="truncate">📅 All Time (Since Start)</span>
+                            <svg id="dash_period_chevron" xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Popup Menu Card -->
+                        <div id="dash_period_menu" class="hidden absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl p-1.5 shadow-2xl border space-y-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"
+                            style="border-color: var(--card-border);">
+                            <div onclick="selectDashPeriod('all', '📅 All Time (Since Start)')" class="px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-between" style="color: var(--text-main);">
+                                <span>📅 All Time</span>
+                                <span id="check_period_all" class="text-blue-500 font-black">✓</span>
+                            </div>
+                            <div onclick="selectDashPeriod('month', '📅 This Month')" class="px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-between" style="color: var(--text-main);">
+                                <span>📅 This Month</span>
+                                <span id="check_period_month" class="text-blue-500 font-black hidden">✓</span>
+                            </div>
+                            <div onclick="selectDashPeriod('week', '📅 This Week')" class="px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-between" style="color: var(--text-main);">
+                                <span>📅 This Week</span>
+                                <span id="check_period_week" class="text-blue-500 font-black hidden">✓</span>
+                            </div>
+                            <div onclick="selectDashPeriod('today', '📅 Today')" class="px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-between" style="color: var(--text-main);">
+                                <span>📅 Today</span>
+                                <span id="check_period_today" class="text-blue-500 font-black hidden">✓</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desktop / Tablet Chips (>= sm) -->
+                <div class="hidden sm:flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">Timeframe:</span>
+                    <button onclick="setDashboardPeriod('all')" id="dash_period_all" class="filter-chip active text-xs font-semibold px-3 py-1.5 rounded-xl border shrink-0" style="border-color: var(--card-border);">All Time</button>
+                    <button onclick="setDashboardPeriod('month')" id="dash_period_month" class="filter-chip text-xs font-semibold px-3 py-1.5 rounded-xl border shrink-0" style="border-color: var(--card-border);">This Month</button>
+                    <button onclick="setDashboardPeriod('week')" id="dash_period_week" class="filter-chip text-xs font-semibold px-3 py-1.5 rounded-xl border shrink-0" style="border-color: var(--card-border);">This Week</button>
+                    <button onclick="setDashboardPeriod('today')" id="dash_period_today" class="filter-chip text-xs font-semibold px-3 py-1.5 rounded-xl border shrink-0" style="border-color: var(--card-border);">Today</button>
+                </div>
+
+                <button onclick="fetchGlobalOverview()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0 px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span class="hidden sm:inline">Refresh</span>
+                </button>
             </div>
 
-            <div id="global_stats_list" class="space-y-3">
-                <div class="p-12 text-center opacity-20 italic text-[10px]">Accessing Cloud Intelligence...</div>
+            <!-- Business Stats Banner (Side-by-Side Compact Layout) -->
+            <div class="glass-card rounded-2xl p-3 sm:p-4 grid grid-cols-3 gap-2 sm:gap-4 text-center sm:text-left">
+                <div class="sm:border-l-4 sm:border-l-blue-500 sm:pl-3">
+                    <span class="block text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Work Done</span>
+                    <span id="stat_total_work" class="text-xs sm:text-xl font-black font-heading mt-0.5 block leading-tight text-blue-600 dark:text-blue-400">KSh 0.00</span>
+                    <span class="hidden sm:block text-[10px] text-slate-400 mt-0.5">All production value</span>
+                </div>
+                <div class="border-l pl-2 sm:pl-3 sm:border-l-4 sm:border-l-emerald-500" style="border-color: var(--card-border);">
+                    <span class="block text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Cash Paid</span>
+                    <span id="stat_total_paid" class="text-xs sm:text-xl font-black font-heading mt-0.5 block leading-tight text-emerald-600 dark:text-emerald-400">KSh 0.00</span>
+                    <span class="hidden sm:block text-[10px] text-slate-400 mt-0.5">Total payouts to tailors</span>
+                </div>
+                <div class="border-l pl-2 sm:pl-3 sm:border-l-4 sm:border-l-amber-500" style="border-color: var(--card-border);">
+                    <span class="block text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Payout Due</span>
+                    <span id="stat_total_due" class="text-xs sm:text-xl font-black font-heading mt-0.5 block leading-tight text-amber-600 dark:text-amber-400">KSh 0.00</span>
+                    <span class="hidden sm:block text-[10px] text-slate-400 mt-0.5">Pending balance owed</span>
+                </div>
+            </div>
+
+            <!-- Tailor Breakdown List -->
+            <div class="space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+                    <div>
+                        <h2 class="text-sm font-bold tracking-tight">Tailor Payout Balances</h2>
+                        <p class="text-xs text-slate-400">Click any tailor to manage their work and payouts</p>
+                    </div>
+                    <div class="w-full sm:w-64">
+                        <input type="text" id="dash_tailor_search" oninput="filterDashboardTailors(this.value)"
+                            placeholder="🔍 Search tailor by name..."
+                            class="w-full rounded-xl px-3 py-1.5 text-xs font-semibold">
+                    </div>
+                </div>
+                <div id="global_stats_list" class="space-y-2.5">
+                    <div class="p-12 text-center text-slate-400 italic text-sm">Loading team overview...</div>
+                </div>
             </div>
         </section>
 
-        <!-- LEDGER TAB -->
-        <section id="section_ledger" class="space-y-4 hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div class="glass-card rounded-2xl p-4">
-                <div class="relative">
-                    <input type="text" id="employee_search" oninput="searchEmployees(this.value)" onfocus="searchEmployees(this.value)" onclick="searchEmployees(this.value)"
-                        class="w-full text-base font-semibold bg-transparent border-b outline-none pb-1"
-                        style="border-color: var(--card-border);" placeholder="Select tailor to manage ledger...">
-                    <div id="search_results"
-                        class="absolute left-0 right-0 top-full mt-1 glass-card rounded-xl z-40 hidden max-h-48 overflow-y-auto shadow-xl">
-                    </div>
+        <!-- ==================== STREAMLINED TAILOR LEDGER TAB ==================== -->
+        <section id="section_ledger" class="space-y-5 hidden">
+            
+            <!-- 1. Simple Tailor Picker Bar -->
+            <div class="glass-card rounded-2xl p-4 space-y-3 relative z-30">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Select Tailor to View</label>
+                    <span id="tailor_count_badge" class="text-xs text-slate-400">0 Registered</span>
                 </div>
-                <!-- Selection Badge -->
-                <div id="selected_employee_badge"
-                    class="mt-3 flex items-center justify-between rounded-lg px-3 py-2 hidden"
-                    style="background: var(--accent-soft);">
-                    <div class="flex items-center gap-2">
-                        <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                        <span id="selected_name" class="text-[10px] font-bold uppercase tracking-tight">Staff
-                            Loaded</span>
-                    </div>
-                    <button onclick="clearSelection()"
-                        class="opacity-30 hover:opacity-100 hover:text-red-500 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
+                
+                <!-- Custom Glassmorphic Tailor Dropdown Selector -->
+                <div class="relative" id="custom_tailor_dropdown_container">
+                    <button type="button" id="tailor_select_btn" onclick="toggleTailorCustomDropdown()"
+                        class="w-full rounded-xl p-3 flex items-center justify-between font-bold text-sm border shadow-sm transition-all text-left card-hover"
+                        style="background-color: var(--accent-soft); border-color: var(--card-border); color: var(--text-main);">
+                        <div class="flex items-center gap-2.5 overflow-hidden">
+                            <div id="tailor_select_avatar" class="w-6 h-6 rounded-lg bg-blue-600 text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                                🧵
+                            </div>
+                            <span id="tailor_select_label" class="truncate">-- Choose Tailor to Manage --</span>
+                        </div>
+                        <svg id="tailor_select_chevron" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
-                </div>
-            </div>
 
-            <!-- Dashboard Filters -->
-            <div class="flex items-center gap-3 px-1">
-                <div class="flex items-center gap-2 bg-black/5 dark:bg-white/10 p-1 rounded-md">
-                    <span class="text-[7px] font-bold opacity-70 uppercase">Range</span>
-                    <div class="flex items-center gap-1">
-                        <input type="date" id="filter_from" onchange="loadFromCloud()"
-                            class="rounded p-1 text-[8px] opacity-90">
-                        <span class="opacity-40">/</span>
-                        <input type="date" id="filter_to" onchange="loadFromCloud()"
-                            class="rounded p-1 text-[8px] opacity-90">
+                    <!-- Popup Menu Card (Floats Above All Below Content) -->
+                    <div id="tailor_select_menu" class="hidden absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl p-2.5 shadow-2xl border space-y-2 max-h-80 flex flex-col bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl"
+                        style="border-color: var(--card-border);">
+                        <div>
+                            <input type="text" id="tailor_menu_search" oninput="filterTailorMenu(this.value)" placeholder="🔍 Quick find tailor..."
+                                class="w-full rounded-xl px-3 py-2 text-xs font-semibold">
+                        </div>
+                        <div id="tailor_menu_items" class="overflow-y-auto space-y-1 pr-1 flex-1 no-scrollbar max-h-56">
+                            <!-- Injected dynamically by JS -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="ledger_controls" class="space-y-4 opacity-40 pointer-events-none transition-all">
-                <!-- Slim Entry Form -->
-                <div class="glass-card rounded-2xl p-4 space-y-4">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="col-span-2 space-y-1">
-                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Garment</span>
-                            <select id="garment_type" class="w-full rounded-xl p-2 outline-none appearance-none">
-                                <option>Blazer</option>
-                                <option>Pant</option>
-                                <option>Waist coat</option>
-                                <option>Dress</option>
-                                <option>Shirt (African/Official)</option>
-                                <option>Skirt</option>
-                                <option>Repair</option>
+            <!-- Empty State when no tailor is selected -->
+            <div id="ledger_empty_state" class="p-12 text-center glass-card rounded-2xl space-y-3">
+                <div class="w-12 h-12 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto text-xl font-bold">
+                    🧵
+                </div>
+                <h3 class="text-base font-bold">No Tailor Selected</h3>
+                <p class="text-xs text-slate-400 max-w-sm mx-auto">Please choose a tailor from the dropdown above to view their earnings, stitched garments, and record payments.</p>
+            </div>
+
+            <!-- 2. Active Tailor Ledger Content (Shown when tailor is selected) -->
+            <div id="ledger_active_content" class="space-y-5 hidden">
+                
+                <!-- Tailor Summary Dashboard Card -->
+                <div class="glass-card rounded-2xl p-5 relative overflow-hidden bg-gradient-to-br from-white/90 to-blue-50/50 dark:from-slate-900/90 dark:to-slate-800/50">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <div id="ledger_tailor_avatar" class="w-12 h-12 rounded-2xl bg-blue-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md">
+                                T
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h2 id="ledger_tailor_name" class="text-lg font-bold">Tailor Name</h2>
+                                    <span id="ledger_balance_badge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">Settled</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Tailor Production & Payment Ledger</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center gap-2">
+                            <button onclick="openPaymentModal()" class="px-4 py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center gap-1.5 shadow-md">
+                                <span>💵 Issue Payment</span>
+                            </button>
+                            <button onclick="toggleAddWorkForm()" id="toggle_work_btn" class="px-4 py-2.5 rounded-xl btn-secondary text-xs font-bold flex items-center gap-1.5">
+                                <span>➕ Add Work</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3 Financial Stat Blocks -->
+                    <div class="grid grid-cols-3 gap-2 sm:gap-4 mt-5 pt-4 border-t border-slate-200/60 dark:border-white/10 text-center">
+                        <div class="p-2 sm:p-3 rounded-xl bg-black/5 dark:bg-white/5">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Total Earned</span>
+                            <span id="ledger_stat_earned" class="text-xs sm:text-base font-bold font-heading">KSh 0.00</span>
+                        </div>
+                        <div class="p-2 sm:p-3 rounded-xl bg-black/5 dark:bg-white/5">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Cash Paid</span>
+                            <span id="ledger_stat_paid" class="text-xs sm:text-base font-bold text-emerald-600 dark:text-emerald-400 font-heading">KSh 0.00</span>
+                        </div>
+                        <div class="p-2 sm:p-3 rounded-xl bg-black/5 dark:bg-white/5">
+                            <span class="block text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">Balance Due</span>
+                            <span id="ledger_stat_balance" class="text-xs sm:text-base font-black font-heading text-blue-600 dark:text-blue-400">KSh 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Stitched Garment Form (Collapsible / Expandable) -->
+                <div id="add_work_section" class="glass-card rounded-2xl p-5 space-y-4 hidden border-2 border-blue-500/20">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🧵</span>
+                            <h3 class="text-sm font-bold">Record Stitched Garment</h3>
+                        </div>
+                        <button onclick="toggleAddWorkForm()" class="text-xs font-bold text-slate-400 hover:text-slate-600">✕ Close</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="sm:col-span-2 space-y-1">
+                            <label class="text-xs font-semibold text-slate-500">Garment Type</label>
+                            <select id="garment_type" class="w-full rounded-xl p-2.5 text-sm font-medium outline-none">
+                                <option value="Blazer">Blazer / Suit Jacket</option>
+                                <option value="Trouser / Pant">Trouser / Pant</option>
+                                <option value="Waist Coat">Waist Coat</option>
+                                <option value="Shirt (Official/African)">Shirt (Official / African)</option>
+                                <option value="Dress">Dress / Gown</option>
+                                <option value="Skirt">Skirt</option>
+                                <option value="Repair / Alteration">Repair / Alteration</option>
                             </select>
                         </div>
                         <div class="space-y-1">
-                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Qty</span>
-                            <input type="number" id="qty" class="w-full rounded-xl p-2" placeholder="0">
+                            <label class="text-xs font-semibold text-slate-500">Quantity Sewn</label>
+                            <input type="number" id="qty" oninput="calculateEntryPreview()" min="1" class="w-full rounded-xl p-2.5 text-sm font-bold" placeholder="e.g. 1">
                         </div>
                         <div class="space-y-1">
-                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Cost</span>
-                            <input type="number" id="unit_cost" class="w-full rounded-xl p-2" placeholder="0">
+                            <label class="text-xs font-semibold text-slate-500">Rate per Piece (KSh)</label>
+                            <input type="number" id="unit_cost" oninput="calculateEntryPreview()" min="0" class="w-full rounded-xl p-2.5 text-sm font-bold" placeholder="e.g. 800">
                         </div>
                     </div>
-                    <button onclick="addEntry()"
-                        class="w-full py-3 rounded-xl btn-primary uppercase tracking-widest shadow-md">Add Production
-                        Entry</button>
+
+                    <!-- Live Math Preview -->
+                    <div class="p-3 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-between text-xs font-semibold">
+                        <span class="text-slate-500">Total Payout for this entry:</span>
+                        <span id="entry_preview_amount" class="text-sm font-bold text-blue-600 dark:text-blue-400">KSh 0.00</span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-400">Date:</span>
+                            <input type="date" id="log_date" class="rounded-lg p-1.5 text-xs font-semibold">
+                        </div>
+                        <button onclick="addEntry()" class="flex-1 py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center justify-center gap-1.5 shadow-md">
+                            <span>Save Stitched Garment</span>
+                        </button>
+                    </div>
                 </div>
 
-                <h3 class="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2 mt-4 ml-1">Work Logged (Production)</h3>
-                <div id="entries_list" class="space-y-2 max-h-[300px] overflow-y-auto no-scrollbar hidden"></div>
+                <!-- Simple Date & Type Filter Bar -->
+                <div class="glass-card rounded-2xl p-3 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <!-- Quick Date Presets -->
+                        <div class="flex items-center gap-1">
+                            <button onclick="setLedgerFilter('all')" id="filter_btn_all" class="filter-chip active">All Time</button>
+                            <button onclick="setLedgerFilter('month')" id="filter_btn_month" class="filter-chip">This Month</button>
+                            <button onclick="setLedgerFilter('week')" id="filter_btn_week" class="filter-chip">This Week</button>
+                            <button onclick="setLedgerFilter('today')" id="filter_btn_today" class="filter-chip">Today</button>
+                            <button onclick="toggleCustomDate()" id="filter_btn_custom" class="filter-chip">📅 Custom Range</button>
+                        </div>
 
-                <h3 class="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2 mt-4 ml-1">Payments & Advances</h3>
-                <div id="advances_list" class="space-y-2 hidden"></div>
+                        <!-- Record Type Switcher -->
+                        <div class="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
+                            <button onclick="switchRecordView('all')" id="view_btn_all" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white dark:bg-white/10 shadow-sm">All Records</button>
+                            <button onclick="switchRecordView('jobs')" id="view_btn_jobs" class="text-[11px] font-bold px-2.5 py-1 rounded-lg text-slate-400">🧵 Stitched</button>
+                            <button onclick="switchRecordView('payments')" id="view_btn_payments" class="text-[11px] font-bold px-2.5 py-1 rounded-lg text-slate-400">💳 Payments</button>
+                        </div>
+                    </div>
 
-                <!-- Record Payment Button -->
-                <button onclick="openPaymentModal()"
-                    class="w-full py-3 rounded-xl btn-secondary uppercase tracking-widest mt-2">Record Payment</button>
+                    <!-- Custom Date Range Expandable -->
+                    <div id="custom_date_container" class="flex items-center gap-2 pt-2 border-t border-black/5 dark:border-white/5 hidden">
+                        <span class="text-xs text-slate-400 font-semibold">From:</span>
+                        <input type="date" id="filter_from" onchange="loadFromCloud()" class="rounded-lg p-1.5 text-xs font-semibold">
+                        <span class="text-slate-400 font-semibold">To:</span>
+                        <input type="date" id="filter_to" onchange="loadFromCloud()" class="rounded-lg p-1.5 text-xs font-semibold">
+                    </div>
+                </div>
+
+                <!-- Unified Ledger Records List -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between px-1">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400" id="records_heading">Work & Payments History</h3>
+                        <span class="text-xs text-slate-400" id="records_count_badge">0 items</span>
+                    </div>
+
+                    <div id="ledger_records_list" class="space-y-2.5">
+                        <div class="p-8 text-center text-slate-400 italic text-xs glass-card rounded-2xl">No records found for this period.</div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- PAYMENT MODAL -->
-        <div id="payment_modal"
-            class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 hidden animate-in fade-in duration-200">
-            <div class="glass-card rounded-t-3xl sm:rounded-3xl p-5 w-full max-w-md shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
-                <!-- Modal Header -->
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-bold">Record Payment</h3>
-                    <button onclick="closePaymentModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 text-xs font-bold">✕</button>
-                </div>
-
-                <!-- Tabs -->
-                <div class="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-white/5">
-                    <button onclick="switchPaymentTab('job')" id="pay_tab_job"
-                        class="flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all bg-white dark:bg-white/10 shadow-sm">Pay for Job</button>
-                    <button onclick="switchPaymentTab('expense')" id="pay_tab_expense"
-                        class="flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-slate-400">General Expense</button>
-                </div>
-
-                <!-- TAB A: Pay for Job -->
-                <div id="pay_panel_job" class="space-y-3 overflow-y-auto flex-1 no-scrollbar">
-                    <p class="text-[9px] uppercase tracking-widest opacity-40">Select a job to pay for:</p>
-                    <div id="pay_job_list" class="space-y-2"></div>
-                    <div id="pay_job_form" class="space-y-3 pt-2 border-t hidden" style="border-color: var(--card-border);">
-                        <div id="pay_job_selected_label" class="text-xs font-semibold text-blue-600"></div>
-                        <div class="grid grid-cols-2 gap-3 text-[9px] font-bold uppercase tracking-widest opacity-60">
-                            <div>Job Value: <span id="pay_job_value" class="text-slate-700 dark:text-slate-300"></span></div>
-                            <div>Already Paid: <span id="pay_job_paid" class="text-red-500"></span></div>
-                        </div>
-                        <div class="space-y-1">
-                            <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Payment Amount</span>
-                            <input type="number" id="pay_job_amount" placeholder="0.00" class="w-full rounded-xl p-3 text-base font-bold">
-                        </div>
-                        <button onclick="submitJobPayment()"
-                            class="w-full py-3 rounded-xl btn-primary uppercase tracking-widest shadow-md">Confirm Payment</button>
-                    </div>
-                </div>
-
-                <!-- TAB B: General Expense -->
-                <div id="pay_panel_expense" class="space-y-3 hidden">
-                    <p class="text-[9px] uppercase tracking-widest opacity-40">Fuel, lunch, advance, transport, etc.</p>
-                    <div class="space-y-1">
-                        <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Note</span>
-                        <input type="text" id="pay_exp_desc" placeholder="e.g. Lunch, Fuel, Transport..." class="w-full rounded-xl p-3">
-                    </div>
-                    <div class="space-y-1">
-                        <span class="text-[7px] font-bold uppercase opacity-70 ml-1">Amount</span>
-                        <input type="number" id="pay_exp_amount" placeholder="0.00" class="w-full rounded-xl p-3 text-base font-bold">
-                    </div>
-                    <button onclick="submitExpensePayment()"
-                        class="w-full py-3 rounded-xl btn-secondary uppercase tracking-widest">Record Expense</button>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- TRANSACTIONS TAB -->
-        <section id="section_transactions" class="space-y-4 hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <!-- ==================== ACTIVITY LOG TAB ==================== -->
+        <section id="section_transactions" class="space-y-4 hidden">
             <div class="flex items-center justify-between px-1">
-                <h2 class="text-[8px] font-bold uppercase tracking-widest opacity-30">Global Transactions Log</h2>
-                <button onclick="fetchGlobalTransactions()"
-                    class="text-[8px] font-bold text-blue-500 uppercase tracking-widest">Refresh</button>
+                <div>
+                    <h2 class="text-sm font-bold tracking-tight">Recent Activity Feed</h2>
+                    <p class="text-xs text-slate-400">Unified audit trail of all work and payments across all tailors</p>
+                </div>
+                <button onclick="fetchGlobalTransactions()" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                </button>
             </div>
-            <div id="global_transactions_list" class="space-y-2">
-                <div class="p-12 text-center opacity-20 italic text-[10px]">Loading transactions...</div>
+            <div id="global_transactions_list" class="space-y-2.5">
+                <div class="p-12 text-center text-slate-400 italic text-sm">Loading activity log...</div>
             </div>
         </section>
 
-        <!-- STAFF TAB -->
-        <section id="section_staff" class="space-y-4 hidden">
-            <div class="glass-card rounded-2xl p-5">
-                <h3 class="text-[10px] uppercase font-bold mb-3 opacity-50 tracking-widest">Onboard Tailor</h3>
-                <div class="flex gap-2">
-                    <input type="text" id="new_employee_name" class="flex-grow rounded-xl p-3"
-                        placeholder="Full name...">
-                    <button onclick="addNewEmployee()" class="px-5 rounded-xl btn-primary">Onboard</button>
+        <!-- ==================== TAILORS TEAM REGISTRY TAB ==================== -->
+        <section id="section_staff" class="space-y-5 hidden">
+            <div class="glass-card rounded-2xl p-5 space-y-3">
+                <div>
+                    <h3 class="text-sm font-bold">Onboard New Tailor</h3>
+                    <p class="text-xs text-slate-400">Add a new staff member to track their garment production and pay</p>
                 </div>
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-1">
+                    <input type="text" id="new_employee_name" class="sm:col-span-3 rounded-xl p-3 text-sm font-semibold"
+                        placeholder="Tailor full name (e.g. Dickens Ouko)...">
+                    <input type="tel" id="new_employee_phone" class="sm:col-span-2 rounded-xl p-3 text-sm font-semibold"
+                        placeholder="Phone (e.g. 0712 345 678)...">
+                </div>
+                <button onclick="addNewEmployee()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    Add Tailor to Registry
+                </button>
             </div>
 
-            <div class="space-y-2">
+            <div class="space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Registered Tailors</h3>
+                    <div class="w-full sm:w-64">
+                        <input type="text" id="team_tailor_search" oninput="filterTeamTailors(this.value)"
+                            placeholder="🔍 Search registered tailors..."
+                            class="w-full rounded-xl px-3 py-1.5 text-xs font-semibold">
+                    </div>
+                </div>
                 <div id="staff_full_list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
             </div>
         </section>
 
     </main>
 
-    <!-- Global Floating Footer -->
-    <footer class="fixed left-4 right-4 z-50 max-w-3xl mx-auto"
-        style="bottom: calc(1rem + env(safe-area-inset-bottom));">
-        <div class="glass-card rounded-2xl p-3 px-5 flex items-center justify-between shadow-2xl">
-            <div class="flex items-center gap-4 sm:gap-6 py-1">
-                <div class="min-w-fit">
-                    <span class="block text-[7px] font-bold opacity-70 uppercase tracking-tighter">Gross</span>
-                    <span id="display_total" class="text-xs font-bold font-heading">0.00</span>
+    <!-- Payment Modal -->
+    <div id="payment_modal" class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+        <div class="glass-card rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 w-full max-w-lg shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/5">
+                <div>
+                    <h3 class="text-base font-bold">Issue Payment to Tailor</h3>
+                    <p class="text-xs text-slate-400" id="modal_tailor_label">Recipient: -</p>
                 </div>
-                <div class="min-w-fit">
-                    <span class="block text-[7px] font-bold opacity-70 uppercase tracking-tighter">Paid</span>
-                    <span id="display_paid" class="text-xs font-bold text-red-500 font-heading">0.00</span>
-                </div>
-                <div class="border-l pl-4 sm:pl-6 h-6 flex flex-col justify-center"
-                    style="border-color: var(--card-border);">
-                    <span class="block text-[7px] font-bold opacity-70 uppercase tracking-tighter">Net Debt</span>
-                    <span id="display_balance" class="text-sm font-bold font-heading leading-tight"
-                        style="color: var(--text-main);">0.00</span>
-                    <span id="display_balance_mobile" class="hidden">0.00</span>
+                <button onclick="closePaymentModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 hover:text-slate-800 text-sm font-bold">✕</button>
+            </div>
+
+            <!-- Tabs: Pay Job vs Cash Advance -->
+            <div class="flex gap-1.5 p-1.5 rounded-xl bg-slate-100 dark:bg-white/5">
+                <button onclick="switchPaymentTab('job')" id="pay_tab_job"
+                    class="flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all bg-white dark:bg-white/10 shadow-sm">
+                    🏷️ Pay for Stitched Job
+                </button>
+                <button onclick="switchPaymentTab('expense')" id="pay_tab_expense"
+                    class="flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all text-slate-400">
+                    ☕ Cash Advance / Allowance
+                </button>
+            </div>
+
+            <!-- Tab A: Pay for Specific Job -->
+            <div id="pay_panel_job" class="space-y-4 overflow-y-auto flex-1 no-scrollbar">
+                <span class="text-xs font-semibold text-slate-500">Select which garment you are paying for:</span>
+                <div id="pay_job_list" class="space-y-2 max-h-48 overflow-y-auto"></div>
+
+                <div id="pay_job_form" class="space-y-3 pt-3 border-t border-black/5 dark:border-white/5 hidden">
+                    <div id="pay_job_selected_label" class="text-xs font-bold text-blue-600 dark:text-blue-400"></div>
+                    <div class="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 text-xs font-semibold">
+                        <div>Job Value: <span id="pay_job_value" class="font-bold">KSh 0.00</span></div>
+                        <div>Already Paid: <span id="pay_job_paid" class="font-bold text-emerald-600 dark:text-emerald-400">KSh 0.00</span></div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-semibold text-slate-500">Payment Amount (KSh)</label>
+                        <input type="number" id="pay_job_amount" placeholder="0.00" class="w-full rounded-xl p-3 text-lg font-bold">
+                    </div>
+                    <button onclick="submitJobPayment()"
+                        class="w-full py-3.5 rounded-xl btn-primary text-sm font-bold uppercase tracking-wider shadow-lg">
+                        Confirm & Record Payment
+                    </button>
                 </div>
             </div>
 
-            <button onclick="window.print()"
-                class="w-10 h-10 flex items-center justify-center rounded-xl transition-all hover:opacity-80"
-                style="background: var(--accent); color: var(--bg-color);">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-            </button>
+            <!-- Tab B: Cash Advance -->
+            <div id="pay_panel_expense" class="space-y-4 hidden">
+                <p class="text-xs text-slate-400">Record cash advance for lunch, transport, upkeep, or emergency allowance.</p>
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-500">Reason / Note</label>
+                    <input type="text" id="pay_exp_desc" placeholder="e.g. Lunch Allowance, Transport..." class="w-full rounded-xl p-3 text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-500">Cash Amount (KSh)</label>
+                    <input type="number" id="pay_exp_amount" placeholder="0.00" class="w-full rounded-xl p-3 text-lg font-bold">
+                </div>
+                <button onclick="submitExpensePayment()"
+                    class="w-full py-3.5 rounded-xl btn-primary text-sm font-bold uppercase tracking-wider shadow-lg">
+                    Record Cash Advance
+                </button>
+            </div>
         </div>
-    </footer>
+    </div>
 
-    <!-- Custom Confirmation Modal -->
-    <div id="confirm_modal"
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden animate-in fade-in duration-200">
+    <!-- Edit Tailor Contact Modal -->
+    <div id="edit_contact_modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
         <div class="glass-card rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
-            <div class="text-center space-y-2">
-                <div class="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
+            <div class="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/5">
+                <div>
+                    <h3 class="text-base font-bold">Edit Tailor Contact</h3>
+                    <p class="text-xs text-slate-400" id="edit_emp_name">Tailor: -</p>
                 </div>
-                <h3 class="text-lg font-bold">Terminate Staff?</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">This will permanently remove <span
-                        id="confirm_emp_name" class="font-bold text-slate-800 dark:text-slate-200"></span> from the
-                    registry. This action cannot be undone.</p>
+                <button onclick="closeEditContactModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 text-sm font-bold">✕</button>
             </div>
+            <div class="space-y-1">
+                <label class="text-xs font-semibold text-slate-500">Phone Number</label>
+                <input type="tel" id="edit_emp_phone" placeholder="e.g. 0712 345 678" class="w-full rounded-xl p-3 text-sm font-bold">
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeEditContactModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 font-bold text-xs">Cancel</button>
+                <button onclick="saveTailorContact()" class="flex-1 py-2.5 rounded-xl btn-primary font-bold text-xs shadow-md">Save Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm_modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden">
+        <div class="glass-card rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4 text-center">
+            <h3 class="text-base font-bold">Remove Tailor?</h3>
+            <p class="text-xs text-slate-500">Are you sure you want to remove <span id="confirm_emp_name" class="font-bold text-slate-800 dark:text-slate-200"></span> from staff registry?</p>
             <div class="flex gap-3 pt-2">
-                <button onclick="closeConfirmModal()"
-                    class="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 font-bold text-[10px] uppercase tracking-widest">Cancel</button>
-                <button id="confirm_fire_btn"
-                    class="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-red-500/20">Fire
-                    Staff</button>
+                <button onclick="closeConfirmModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 font-bold text-xs">Cancel</button>
+                <button id="confirm_fire_btn" class="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs shadow-md">Remove</button>
             </div>
         </div>
     </div>
