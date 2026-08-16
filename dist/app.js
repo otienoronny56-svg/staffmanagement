@@ -350,7 +350,8 @@ function selectTailorFromCustomDropdown(id, name) {
 }
 
 function selectEmployee(id, name) {
-    currentEmployee = { id, full_name: name };
+    const empData = allEmployees.find(e => e.id === id) || { id, full_name: name };
+    currentEmployee = { ...empData, id, full_name: name };
 
     const label = document.getElementById('tailor_select_label');
     const avatar = document.getElementById('tailor_select_avatar');
@@ -1269,10 +1270,11 @@ async function shareWhatsAppSlip(tailorObj = null) {
     }
 
     const name = tailor.full_name;
-    let phone = tailor.phone || '';
+    const empInList = allEmployees.find(e => e.id === tailor.id || e.full_name === name);
+    let phone = (tailor.phone || (empInList && empInList.phone) || '').trim();
 
     // If phone is missing, prompt to enter once and save permanently
-    if (!phone || phone.trim() === '') {
+    if (!phone || phone === '') {
         const enteredPhone = prompt(`Enter WhatsApp phone number for ${name} (e.g. 0712 345 678):`);
         if (enteredPhone && enteredPhone.trim() !== '') {
             phone = enteredPhone.trim();
